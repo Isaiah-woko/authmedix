@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# md files
+all_routes.md
+/lib/generated/prisma
+
+# AI Agents and Editors
+.agents/
+.claude/
+.cursor/
+.devin/
+.windsurf/
