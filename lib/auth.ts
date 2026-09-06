@@ -43,7 +43,7 @@ export const authConfig: NextAuthConfig = {
         session.user.sessionExpiresAt = token.sessionExpiresAt as string;
 
         // Bulletproof boolean check (handles both boolean true and string "true")
-        const mcp = token.mustChangePassword;
+        const mcp = token.mustChangePassword as unknown;
         session.user.mustChangePassword = mcp === true || mcp === "true";
       }
       return session;
