@@ -46,3 +46,10 @@ export async function verifyLoginCode(userId: string, code: string): Promise<boo
   }
   return valid;
 }
+
+export async function hasUsableLoginCode(userId: string): Promise<boolean> {
+  const count = await prisma.loginCode.count({
+    where: { userId, used: false, expiresAt: { gt: new Date() } },
+  });
+  return count > 0;
+}
