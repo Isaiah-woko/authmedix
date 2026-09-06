@@ -72,7 +72,8 @@ model LoginCode {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  code      String
+  codeHash  String
+  salt      String
   used      Boolean  @default(false)
   expiresAt DateTime
   createdAt DateTime @default(now())
@@ -237,19 +238,17 @@ enum BreakGlassReason {
 }
 
 model AuditLog {
-  id String @id @default(cuid())
-
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id])
-
+  id        String   @id @default(cuid())
+  seq       Int      @unique @default(autoincrement())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
   patientId String?
-
-  action  String
-  outcome String
-  reason  String?
-
-  flagged Boolean @default(false)
-
+  action    String
+  outcome   String
+  reason    String?
+  flagged   Boolean  @default(false)
+  prevHash  String
+  entryHash String
   createdAt DateTime @default(now())
 
   @@index([userId])
