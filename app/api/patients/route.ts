@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { registerPatientSchema } from "@/lib/validators";
 import { generatePatientCode } from "@/lib/id-generators";
 import { writeAuditLog } from "@/lib/audit";
+import type { Prisma } from "@prisma/client"; // Added Prisma type import
 
 export async function GET(req: NextRequest) {
   const user = await requireAuth();
@@ -12,14 +13,17 @@ export async function GET(req: NextRequest) {
 
   const query = req.nextUrl.searchParams.get("query")?.trim().toLowerCase() ?? "";
 
+  // Replaced `any` with Prisma's strict type for Patient queries
+  const whereClause: Prisma.PatientWhereInput = query ? {
+    OR: [
+      { name: { contains: query, mode: "insensitive" } },
+      { patientCode: { contains: query, mode: "insensitive" } },
+    ]
+  } : {};
+
   // Identity-only search. Cross-hospital to support referrals.
   const patients = await prisma.patient.findMany({
-    where: query ? {
-      OR: [
-        { name: { contains: query, mode: "insensitive" } },
-        { patientCode: { contains: query, mode: "insensitive" } },
-      ]
-    } : undefined,
+    where: whereClause,
     select: {
       id: true,
       name: true,
