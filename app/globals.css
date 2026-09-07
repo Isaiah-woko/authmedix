@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ------------------------------------------
+   MediTrust design tokens (Tailwind v4 theme)
+   Each color has exactly ONE meaning app-wide.
+------------------------------------------- */
+@theme {
+  /* Colors */
+  --color-ink: #161b22;         /* primary text, high-emphasis UI */
+  --color-paper: #f7f8fa;       /* app background */
+  --color-slate: #5b6472;       /* secondary text, borders, inactive */
+  --color-trust-teal: #0e7c7b;  /* active/allowed, normal trust state */
+  --color-amber-watch: #b8790a; /* expiring soon, pending review */
+  --color-alert-coral: #c4432b; /* denied, emergency, flagged */
+  --color-deep-indigo: #2b3a67; /* brand accent: nav, primary buttons */
+  --color-section-line: #e2e8f0; /* thin dividers between sections */
+
+  /* Type scale: body 14-15px, dense data 13px,
+     section headers 18-20px semibold, page titles 24px semibold */
+  --text-dense: 13px;
+  --text-dense--line-height: 1.4;
+  --text-body: 14px;
+  --text-body--line-height: 1.5;
+  --text-body-lg: 15px;
+  --text-body-lg--line-height: 1.5;
+  --text-section-header: 18px;
+  --text-section-header--line-height: 1.3;
+  --text-section-header--font-weight: 600;
+  --text-page-title: 24px;
+  --text-page-title--line-height: 1.25;
+  --text-page-title--font-weight: 600;
 }
 
+/* Map the font variables that next/font sets in layout.tsx */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base appearance — fixed light palette, no dark mode */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Monospace is ONLY for Health IDs, patient codes, audit timestamps */
+.identifier {
+  font-family: var(--font-mono);
+  letter-spacing: 0.01em;
+}
+
+/* Thin borders to separate sections (not card shadows) */
+.border-section {
+  border: 1px solid var(--color-section-line);
 }
