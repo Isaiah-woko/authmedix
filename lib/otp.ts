@@ -53,3 +53,9 @@ export async function hasUsableLoginCode(userId: string): Promise<boolean> {
   });
   return count > 0;
 }
+
+/** Step-up 2FA for sensitive admin actions. No lockout side-effects by design. */
+export async function verifyStepUpCode(userId: string, code: string): Promise<boolean> {
+  if (!(await hasUsableLoginCode(userId))) return false;
+  return verifyLoginCode(userId, code);
+}

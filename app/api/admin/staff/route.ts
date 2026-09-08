@@ -7,6 +7,8 @@ import { createStaffSchema } from "@/lib/validators";
 import { generateHealthId, generateTempPassword } from "@/lib/id-generators";
 import { writeAuditLog } from "@/lib/audit";
 import { BCRYPT_ROUNDS } from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
+import { verifyStepUpCode } from "@/lib/otp";
 
 export async function GET() {
   const admin = await requireRole("ADMIN");
@@ -46,6 +48,14 @@ export async function POST(req: NextRequest) {
   }
 
   const { name, email, role } = parsed.data;
+    if (!rateLimit(`stepup-verify:${admin.id}`, 10, 15 * 60_000).allowed) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
+  const stepUpOk = await verifyStepUpCode(admin.id, parsed.data.otpCode);
+  if (!stepUpOk) {
+    await writeAuditLog({ userId: admin.id, action: "STAFF_CREATE_STEP_UP_FAILED", outcome: "DENIED" });
+    return NextResponse.json({ error: "step_up_verification_failed" }, { status: 403 });
+  }
 
   const existingEmail = await prisma.user.findUnique({ where: { email } });
   if (existingEmail) {

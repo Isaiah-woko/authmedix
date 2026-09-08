@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 // ---------- Shared ----------
+const stepUpOtpField = z.string().trim().regex(/^\d{6}$/, "Step-up code must be exactly 6 digits");
+
 
 /** Minimum strength bar: 10+ chars, upper, lower, number, symbol. */
 export const passwordSchema = z
@@ -65,6 +67,7 @@ export const createPassportRequestSchema = z.object({
 export const approveRequestSchema = z.object({
   duration: z.enum(["8H", "24H"]).default("8H"),
   scope: z.array(z.string()).optional(),
+  otpCode: stepUpOtpField,
 });
 
 export const denyRequestSchema = z.object({
@@ -80,6 +83,7 @@ export const grantPassportSchema = z.object({
   purpose: z.string().trim().min(1),
   scope: z.array(z.string()).default([]),
   duration: z.enum(["8H", "24H"]).default("8H"),
+  otpCode: stepUpOtpField,
 });
 
 export const revokePassportSchema = z.object({
@@ -110,6 +114,7 @@ export const createStaffSchema = z.object({
   name: z.string().trim().min(1),
   email: z.string().trim().toLowerCase().email(),
   role: z.enum(["DOCTOR", "NURSE", "PHARMACIST", "LAB", "ADMIN"]),
+  otpCode: stepUpOtpField,
 });
 
 export const updateStaffSchema = z.object({
@@ -119,3 +124,9 @@ export const updateStaffSchema = z.object({
 export const reviewAuditSchema = z.object({
   reviewNote: z.string().trim().optional(),
 });
+
+
+
+
+
+

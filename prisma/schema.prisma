@@ -29,9 +29,9 @@ model User {
   status              UserStatus @default(ACTIVE)
   sessionTtlHrs       Int        @default(6)
   failedLoginAttempts Int        @default(0)
-
-  hospitalId String
-  hospital   Hospital @relation(fields: [hospitalId], references: [id])
+  sessionInvalidatedAt DateTime?
+  hospitalId          String
+  hospital            Hospital   @relation(fields: [hospitalId], references: [id])
 
   heldPassports     AccessPassport[] @relation("HeldBy")
   grantedPassports  AccessPassport[] @relation("GrantedBy")

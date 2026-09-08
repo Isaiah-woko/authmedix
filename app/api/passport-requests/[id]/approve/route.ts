@@ -4,6 +4,8 @@ import { requireRole, DURATION_MS } from "@/lib/access-control";
 import { prisma } from "@/lib/prisma";
 import { approveRequestSchema } from "@/lib/validators";
 import { writeAuditLog } from "@/lib/audit";
+import { rateLimit } from "@/lib/rate-limit";
+import { verifyStepUpCode } from "@/lib/otp";
 
 export async function POST(
   req: NextRequest,
@@ -19,6 +21,15 @@ export async function POST(
   }
 
   const { duration, scope } = parsed.data;
+
+    if (!rateLimit(`stepup-verify:${admin.id}`, 10, 15 * 60_000).allowed) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
+  const stepUpOk = await verifyStepUpCode(admin.id, parsed.data.otpCode);
+  if (!stepUpOk) {
+    await writeAuditLog({ userId: admin.id, action: "APPROVE_STEP_UP_FAILED", outcome: "DENIED" });
+    return NextResponse.json({ error: "step_up_verification_failed" }, { status: 403 });
+  }
 
   const request = await prisma.passportRequest.findUnique({
     where: { id },

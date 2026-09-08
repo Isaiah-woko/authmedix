@@ -10,7 +10,9 @@ declare module "next-auth" {
       hospitalId: string;
       sessionExpiresAt: string;
       mustChangePassword: boolean;
+
     } & DefaultSession["user"];
+      issuedAt?: string;
   }
 }
 
@@ -21,6 +23,9 @@ declare module "next-auth/jwt" {
     role?: Role;
     hospitalId?: string;
     sessionExpiresAt?: string;
+
     mustChangePassword?: boolean;
+    issuedAt?: string;
   }
+
 }

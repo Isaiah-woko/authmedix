@@ -45,9 +45,13 @@ export const authConfig: NextAuthConfig = {
         // Bulletproof boolean check (handles both boolean true and string "true")
         const mcp = token.mustChangePassword as unknown;
         session.user.mustChangePassword = mcp === true || mcp === "true";
+
+        session.issuedAt = (token.issuedAt as string) ?? new Date().toISOString();
       }
       return session;
     },
+
+
   },
 };
 
@@ -68,6 +72,7 @@ export async function issueSessionToken(user: SessionUserPayload) {
       role: user.role,
       hospitalId: user.hospitalId,
       sessionExpiresAt,
+      issuedAt: new Date().toISOString(),
       mustChangePassword: user.mustChangePassword,
     },
     secret,

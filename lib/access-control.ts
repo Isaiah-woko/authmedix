@@ -8,6 +8,7 @@ import {
 } from "./role-fields";
 import type { Role, PassportType, User, AccessPassport } from "@prisma/client";
 
+
 // ── Fixed duration presets (clinical protocol, not arbitrary admin input) ──
 
 export const DURATION_MS: Record<string, number> = {
@@ -42,14 +43,29 @@ export interface AccessResult {
  *
  * Returns the full DB User, or null if unauthenticated/inactive.
  */
+
+function isSessionStale(
+  session: { user?: { sessionExpiresAt?: string }; issuedAt?: string },
+  user: User,
+): boolean {
+  const expiresAt = session.user?.sessionExpiresAt
+    ? new Date(session.user.sessionExpiresAt)
+    : null;
+  if (expiresAt && expiresAt <= new Date()) return true;
+
+  if (user.sessionInvalidatedAt) {
+    // Read from session root
+    const issuedAt = session.issuedAt ? new Date(session.issuedAt) : null;
+    if (!issuedAt || issuedAt < user.sessionInvalidatedAt) return true;
+  }
+  return false;
+}
+
 export async function requireAuth(): Promise<User | null> {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  // Live DB check — the token says "authenticated", the DB says "still allowed".
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (!user || user.status !== "ACTIVE") return null;
 
   // Continuous TTL check (defense-in-depth; middleware also checks this).
@@ -57,6 +73,28 @@ export async function requireAuth(): Promise<User | null> {
     ? new Date(session.user.sessionExpiresAt)
     : null;
   if (expiresAt && expiresAt <= new Date()) return null;
+
+  // Forced-change gate at the route layer: a live session must not survive a force-reset.
+  if (user.mustChangePassword) return null;
+
+  if (isSessionStale(session, user)) return null;
+
+  return user;
+}
+
+/**
+ * For the set-password route only: allows forced-change sessions,
+ * but still rejects inactive users and sessions invalidated by a force-reset.
+ * The route decides forced vs voluntary mode from the DB flag (source of truth).
+ */
+export async function requireSessionForPasswordChange(): Promise<User | null> {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (!user || user.status !== "ACTIVE") return null;
+
+  if (isSessionStale(session, user)) return null;
 
   return user;
 }

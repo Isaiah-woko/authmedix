@@ -1,25 +1,25 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
-import { auth, issueSessionToken, SESSION_COOKIE_NAME, BCRYPT_ROUNDS } from "@/lib/auth";
+import { issueSessionToken, SESSION_COOKIE_NAME, BCRYPT_ROUNDS } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { setPasswordSchema } from "@/lib/validators";
 import { writeAuditLog } from "@/lib/audit";
-import { z } from "zod";
+import { requireSessionForPasswordChange } from "@/lib/access-control";
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+   const user = await requireSessionForPasswordChange();
+  if (!user) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const parsed = setPasswordSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "weak_password",  details: z.flattenError(parsed.error) }, { status: 400 });
+    return NextResponse.json({ error: "weak_password", details: parsed.error.flatten() }, { status: 400 });
   }
   const { newPassword, currentPassword } = parsed.data;
 
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  // (No need to fetch `user` again, the helper already returned the full DB user object)
   if (!user || user.status !== "ACTIVE") {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
@@ -37,7 +37,14 @@ export async function POST(req: NextRequest) {
   }
 
   const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
-  await prisma.user.update({ where: { id: user.id }, data: { passwordHash, mustChangePassword: false } });
+   await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordHash,
+      mustChangePassword: false,
+      sessionInvalidatedAt: null 
+    }
+  });
   await writeAuditLog({ userId: user.id, action: "PASSWORD_CHANGED", outcome: "ALLOWED" });
 
   // Re-issue the session with mustChangePassword now false.

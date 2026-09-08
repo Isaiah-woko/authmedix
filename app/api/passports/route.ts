@@ -4,7 +4,9 @@ import { requireRole, DURATION_MS } from "@/lib/access-control";
 import { prisma } from "@/lib/prisma";
 import { grantPassportSchema } from "@/lib/validators";
 import { writeAuditLog } from "@/lib/audit";
-import type { Prisma } from "@prisma/client"; // Added Prisma type import
+import { rateLimit } from "@/lib/rate-limit";
+import { verifyStepUpCode } from "@/lib/otp";
+import type { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   const admin = await requireRole("ADMIN");
@@ -45,6 +47,15 @@ export async function POST(req: NextRequest) {
 
   const { type, healthId, patientId, purpose, scope, duration } = parsed.data;
 
+    if (!rateLimit(`stepup-verify:${admin.id}`, 10, 15 * 60_000).allowed) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
+  const stepUpOk = await verifyStepUpCode(admin.id, parsed.data.otpCode);
+  if (!stepUpOk) {
+    await writeAuditLog({ userId: admin.id, action: "PASSPORT_GRANT_STEP_UP_FAILED", outcome: "DENIED" });
+    return NextResponse.json({ error: "step_up_verification_failed" }, { status: 403 });
+  }
+
   // Validate target user exists and is active
   const targetUser = await prisma.user.findUnique({ where: { healthId } });
   if (!targetUser || targetUser.status !== "ACTIVE") {
@@ -55,6 +66,12 @@ export async function POST(req: NextRequest) {
   const patient = await prisma.patient.findUnique({ where: { id: patientId } });
   if (!patient) {
     return NextResponse.json({ error: "patient_not_found" }, { status: 404 });
+  }
+
+   // an admin may only grant passports for their OWN hospital's patients.
+  // (Referral targets may be cross-hospital; the patient never is.)
+  if (patient.hospitalId !== admin.hospitalId) {
+    return NextResponse.json({ error: "forbidden_cross_hospital" }, { status: 403 });
   }
 
   // Referrals are strictly 48 hours and ignore client-supplied duration
