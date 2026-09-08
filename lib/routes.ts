@@ -23,8 +23,8 @@ export interface NavItem {
   href: string;
 }
 
-/** Role-aware sidebar (Frontend Brief §6). Grant Passport lives here too —
- *  it's an Admin working screen and needs a nav entry. */
+/** Role-aware sidebar (Frontend Brief section 6, labels per Figma).
+ *  Grant Passport lives here too: it is an Admin working screen that needs a nav entry. */
 export function getNavItems(role: UserRole): NavItem[] {
   if (role === "ADMIN") {
     return [
@@ -39,7 +39,7 @@ export function getNavItems(role: UserRole): NavItem[] {
   }
   return [
     { label: "Dashboard", href: ROUTES.DASHBOARD },
-    { label: "Search", href: ROUTES.SEARCH },
+    { label: "Patient Search", href: ROUTES.SEARCH },
   ];
 }
 

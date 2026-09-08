@@ -61,6 +61,19 @@ const users: MockUser[] = [
     failedLogins: 0,
     locked: false,
   },
+  {
+    id: "u-admin",
+    healthId: "LUTH-ADM-0007",
+    email: "admin@meditrust.dev",
+    password: "Passw0rd!Adm",
+    name: "Chidi Balogun",
+    role: "ADMIN",
+    hospitalId: "LUTH",
+    mustChangePassword: false,
+    status: "ACTIVE",
+    failedLogins: 0,
+    locked: false,
+  },
 ];
 
 export const MOCK_DEMO_CODE = "123456";
