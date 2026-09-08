@@ -1,10 +1,10 @@
+import { USE_MOCKS } from "@/lib/flags";
+import { mockRequest } from "@/lib/mocks/mock-server";
 import type { ApiErrorBody } from "@/types/api";
 
 /**
  * The single error type thrown by every API call in this app.
- * status = HTTP code (0 = network failure)
- * reason = access-denied reason (NO_PASSPORT / PASSPORT_EXPIRED / PASSPORT_REVOKED)
- * locked = account locked after repeated failed attempts
+ * (Mock mode throws MockApiError with the same fields — catch duck-typed.)
  */
 export class ApiClientError extends Error {
   status: number;
@@ -26,6 +26,11 @@ interface RequestOptions {
 }
 
 async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+  // Dev-only fake backend. Real fetch otherwise.
+  if (USE_MOCKS) {
+    return mockRequest<T>(endpoint, options);
+  }
+
   const { method = "GET", body } = options;
 
   let response: Response;
@@ -47,7 +52,6 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
     throw new ApiClientError("Session expired — please sign in again.", 401);
   }
 
-  // Read the body once; some endpoints may return an empty body
   let data: unknown = null;
   const text = await response.text();
   if (text) {
@@ -63,7 +67,7 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
     throw new ApiClientError(
       err.error ?? err.message ?? `Request failed (${response.status})`,
       response.status,
-      err.reason ?? err.denyReason, // accept both contract spellings
+      err.reason ?? err.denyReason,
       err.locked
     );
   }

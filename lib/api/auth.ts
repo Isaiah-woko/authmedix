@@ -18,6 +18,11 @@ export function verifyCode(data: VerifyCodeRequest) {
   return api.post<VerifyCodeResponse>("/auth/verify-code", data);
 }
 
+/** Resend the one-time code (contract gap — confirm with tech lead) */
+export function resendCode() {
+  return api.post<LoginResponse>("/auth/resend-code");
+}
+
 /** Forced first-login change { newPassword } or voluntary { currentPassword, newPassword } */
 export function setPassword(data: SetPasswordRequest) {
   return api.post<SetPasswordResponse>("/auth/set-password", data);

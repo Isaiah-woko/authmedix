@@ -13,10 +13,11 @@ export interface LoginResponse {
   success?: boolean;
   locked?: boolean;
   message?: string;
+  /** When the issued one-time code expires (ISO). Mock provides it; real backend may not. */
+  codeExpiresAt?: string;
 }
 
 export interface VerifyCodeRequest {
-  healthId: string;
   code: string;
 }
 
@@ -27,12 +28,10 @@ export interface VerifyCodeResponse {
   session?: Session;
 }
 
-// Forced flow (first login / admin-forced reset): no current password
 export interface ForcedSetPasswordRequest {
   newPassword: string;
 }
 
-// Voluntary flow (stretch goal): must confirm with current password
 export interface VoluntarySetPasswordRequest {
   currentPassword: string;
   newPassword: string;

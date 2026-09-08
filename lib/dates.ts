@@ -23,8 +23,18 @@ export function getTimeRemaining(expiresAt: string): TimeRemaining {
   };
 }
 
-/** "01:59:59" — live countdown shown next to the relevant action */
+/** "04:59" — minutes and seconds only. Used for the OTP code expiry. */
 export function formatCountdown(expiresAt: string): string {
+  const { totalSeconds, isExpired } = getTimeRemaining(expiresAt);
+  if (isExpired) return "Expired";
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(minutes)}:${pad(seconds)}`;
+}
+
+/** "07:59:32" — hours:minutes:seconds. Used for session TTL and break-glass windows. */
+export function formatCountdownHMS(expiresAt: string): string {
   const { hours, minutes, seconds, isExpired } = getTimeRemaining(expiresAt);
   if (isExpired) return "Expired";
   const pad = (n: number) => String(n).padStart(2, "0");
