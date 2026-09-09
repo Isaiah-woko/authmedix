@@ -23,7 +23,7 @@ export function getTimeRemaining(expiresAt: string): TimeRemaining {
   };
 }
 
-/** "04:59" — minutes and seconds only. Used for the OTP code expiry. */
+/** "04:59" minutes and seconds only. Used for the OTP code expiry. */
 export function formatCountdown(expiresAt: string): string {
   const { totalSeconds, isExpired } = getTimeRemaining(expiresAt);
   if (isExpired) return "Expired";
@@ -33,7 +33,7 @@ export function formatCountdown(expiresAt: string): string {
   return `${pad(minutes)}:${pad(seconds)}`;
 }
 
-/** "07:59:32" — hours:minutes:seconds. Used for session TTL and break-glass windows. */
+/** "07:59:32" hours:minutes:seconds. Used for session TTL and break-glass windows. */
 export function formatCountdownHMS(expiresAt: string): string {
   const { hours, minutes, seconds, isExpired } = getTimeRemaining(expiresAt);
   if (isExpired) return "Expired";
@@ -41,7 +41,16 @@ export function formatCountdownHMS(expiresAt: string): string {
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }
 
-/** True when <= minutesLeft remain — used to switch a countdown to Amber Watch */
+/** "2h 14m" / "28m" / "40s" compact column format for tables, per the Figma. */
+export function formatCountdownCompact(expiresAt: string): string {
+  const { hours, minutes, seconds, isExpired } = getTimeRemaining(expiresAt);
+  if (isExpired) return "Expired";
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m`;
+  return `${seconds}s`;
+}
+
+/** True when <= minutesLeft remain, used to switch a countdown to Amber Watch. */
 export function isExpiringSoon(expiresAt: string, minutesLeft = 30): boolean {
   const { totalSeconds, isExpired } = getTimeRemaining(expiresAt);
   return !isExpired && totalSeconds <= minutesLeft * 60;

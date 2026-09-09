@@ -2,14 +2,17 @@ import type { DenyReason } from "@/types/patient";
 
 export type AccessState = "ACTIVE" | DenyReason;
 
-/** Map the API's 403 reason to the UI state that picks copy + actions */
-export function denyReasonToState(reason?: string): AccessState {
+/** The three no-access situations. Expired and revoked must never share copy. */
+export type DenyState = DenyReason;
+
+/** Map the API's 403 reason to the UI state that picks copy and actions. */
+export function denyReasonToState(reason?: string): DenyState {
   if (reason === "PASSPORT_EXPIRED") return "PASSPORT_EXPIRED";
   if (reason === "PASSPORT_REVOKED") return "PASSPORT_REVOKED";
   return "NO_PASSPORT";
 }
 
-/** Exact copy per state — expired and revoked must read differently */
+/** Exact copy per state. */
 export const ACCESS_STATE_COPY: Record<DenyReason, { headline: string; body: string }> = {
   NO_PASSPORT: {
     headline: "No active passport for this patient",
@@ -25,7 +28,7 @@ export const ACCESS_STATE_COPY: Record<DenyReason, { headline: string; body: str
   },
 };
 
-/** Color tone per state — teal/amber/coral/slate each keep their single meaning */
+/** Color tone per state. Teal, amber and coral each keep their single meaning. */
 export const ACCESS_STATE_TONE: Record<AccessState, "teal" | "amber" | "coral" | "slate"> = {
   ACTIVE: "teal",
   NO_PASSPORT: "slate",
@@ -33,5 +36,5 @@ export const ACCESS_STATE_TONE: Record<AccessState, "teal" | "amber" | "coral" |
   PASSPORT_REVOKED: "coral",
 };
 
-/** All three no-access states offer the same two next actions */
+/** All three no-access states offer the same two next actions. */
 export const NO_ACCESS_ACTIONS = ["REQUEST_ACCESS", "BREAK_GLASS"] as const;
