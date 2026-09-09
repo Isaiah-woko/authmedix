@@ -45,7 +45,9 @@ export function PatientRecordView({
           <section className="mt-6 rounded border border-section-line bg-white">
             <div className="flex items-center justify-between border-b border-section-line px-4 py-3">
               <p className="text-body font-medium text-ink">Records</p>
-              <Link href={ROUTES.addDocumentation(data.patient.id)}>
+              <Link
+                href={`${ROUTES.addDocumentation(data.patient.id)}?name=${encodeURIComponent(data.patient.name)}`}
+              >
                 <Button variant="secondary">Add documentation</Button>
               </Link>
             </div>
