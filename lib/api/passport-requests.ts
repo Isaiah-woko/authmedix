@@ -1,28 +1,43 @@
 import { api } from "./client";
-import type {
-  ApproveRequestPayload,
-  CreatePassportRequest,
-  DenyRequestPayload,
-  PassportRequest,
-} from "@/types/passport-request";
 
-/** Clinical worker asks for access (fallback path) */
-export function createPassportRequest(data: CreatePassportRequest) {
-  return api.post<PassportRequest>("/passport-requests", data);
+export interface RequestPassportPayload {
+  patientId: string;
+  purpose?: string;
+  scope?: string[];
 }
 
-/** "mine" by default; Admin passes status="pending" for the queue */
+export interface PassportRequestItem {
+  id: string;
+  purpose: string;
+  scope: string;
+  status: "PENDING" | "APPROVED" | "DENIED";
+  createdAt: string;
+  denialReason?: string;
+}
+
+/** Clinical worker requests access, the fallback path when no passport exists. */
+export function requestPassport(data: RequestPassportPayload) {
+  return api.post<PassportRequestItem>("/passport-requests", data);
+}
+
+/** Mine by default; Admin passes "pending" for the hospital queue. */
 export function getPassportRequests(status?: "pending") {
   const qs = status ? `?status=${status}` : "";
-  return api.get<PassportRequest[]>(`/passport-requests${qs}`);
+  return api.get<PassportRequestItem[]>(`/passport-requests${qs}`);
 }
 
-/** Admin approves with duration preset 8H (default) or 24H */
-export function approveRequest(id: string, data: ApproveRequestPayload) {
-  return api.post<PassportRequest>(`/passport-requests/${id}/approve`, data);
+/** Admin approves with a duration preset: 8H default, 24H extended. */
+export function approveRequest(
+  id: string,
+  data: { duration: "8H" | "24H"; scope?: string; otpCode?: string }
+) {
+  return api.post<{ passport: unknown; updatedRequest: PassportRequestItem }>(
+    `/passport-requests/${id}/approve`,
+    data
+  );
 }
 
-/** Admin denies; denialReason is required */
-export function denyRequest(id: string, data: DenyRequestPayload) {
-  return api.post<PassportRequest>(`/passport-requests/${id}/deny`, data);
+/** Admin denies; denialReason is required. */
+export function denyRequest(id: string, data: { denialReason: string }) {
+  return api.post<{ ok: boolean }>(`/passport-requests/${id}/deny`, data);
 }

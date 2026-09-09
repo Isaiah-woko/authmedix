@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ACCESS_STATE_COPY } from "@/lib/access";
 import type { DenyState } from "@/lib/access";
 import { ROUTES } from "@/lib/routes";
+import { useSession } from "@/providers/session-provider";
 import type { PatientIdentity } from "@/types/patient";
 
 const tones: Record<DenyState, string> = {
@@ -13,7 +14,6 @@ const tones: Record<DenyState, string> = {
   PASSPORT_REVOKED: "border-alert-coral/40 bg-alert-coral/10",
 };
 
-/** Identity only, plus the two next actions. Never looks like a loading or generic error screen. */
 export function NoAccessState({
   state,
   patient,
@@ -22,7 +22,9 @@ export function NoAccessState({
   patient: PatientIdentity | null;
 }) {
   const router = useRouter();
+  const { session } = useSession();
   const copy = ACCESS_STATE_COPY[state];
+  const isAdmin = session?.user.role === "ADMIN";
 
   return (
     <section className={`max-w-lg rounded border p-6 ${tones[state]}`}>
@@ -39,9 +41,11 @@ export function NoAccessState({
           <Button variant="secondary" onClick={() => router.push(ROUTES.requestAccess(patient.id))}>
             Request Access
           </Button>
-          <Button variant="danger" onClick={() => router.push(ROUTES.breakGlass(patient.id))}>
-            Break Glass
-          </Button>
+          {!isAdmin && (
+            <Button variant="danger" onClick={() => router.push(ROUTES.breakGlass(patient.id))}>
+              Break Glass
+            </Button>
+          )}
         </div>
       ) : null}
     </section>

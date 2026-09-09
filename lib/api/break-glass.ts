@@ -1,8 +1,19 @@
 import { api } from "./client";
-import type { BreakGlassRequest } from "@/types/break-glass";
-import type { AccessPassport } from "@/types/passport";
+import type { EmergencyCategory } from "@/types/break-glass";
 
-/** Self-invoked emergency access. Clinical roles only — never Admin. */
-export function invokeBreakGlass(data: BreakGlassRequest) {
-  return api.post<AccessPassport>("/break-glass", data);
+export interface BreakGlassPayload {
+  patientId: string;
+  confirmedEmergency: true;
+  reasonCategory: EmergencyCategory;
+  reasonDetail: string;
+}
+
+export interface BreakGlassResponse {
+  passportId: string;
+  expiresAt: string;
+}
+
+/** Self-invoked emergency access. Clinical roles only, never Admin. */
+export function invokeBreakGlass(data: BreakGlassPayload) {
+  return api.post<BreakGlassResponse>("/break-glass", data);
 }
