@@ -24,7 +24,8 @@
     "test:phase8": "tsx scripts/test-phase8.ts",
     "test:phase9": "tsx scripts/test-phase9.ts",
     "test:bootstrap": "tsx scripts/test-bootstrap.ts",
-    "test:phase11": "tsx scripts/test-phase11.ts"
+    "test:phase11": "tsx scripts/test-phase11.ts",
+    "test:security": "tsx scripts/test-security-suite.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
