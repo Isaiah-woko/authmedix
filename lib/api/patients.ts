@@ -1,31 +1,34 @@
 import { api } from "./client";
 import type { AccessPassport } from "@/types/passport";
-import type {
-  PatientIdentity,
-  PatientRegisterRequest,
-  PatientRegisterResponse,
-  PatientSummary,
-} from "@/types/patient";
+import type { PatientIdentity } from "@/types/patient";
 import type { ClinicalRecord } from "@/types/record";
 
-/** Identity-only search: name + patient code. Never reveals access status. */
-export function searchPatients(query: string) {
-  return api.get<PatientIdentity[]>(`/patients?query=${encodeURIComponent(query)}`);
-}
-
-/** Shape we expect from GET /api/patients/:id when access is allowed */
+/** Flat record-view payload: demographics, role-filtered records, active passport. */
 export interface PatientRecordView {
-  patient: PatientSummary;
+  patient: PatientIdentity & { dob?: string; allergies?: string[] };
   records: ClinicalRecord[];
   passport: AccessPassport;
 }
 
-/** On 403, throws ApiClientError with .reason = NO_PASSPORT | PASSPORT_EXPIRED | PASSPORT_REVOKED */
+export interface PatientRegisterRequest {
+  name: string;
+  dob: string;
+  allergies?: string[];
+  careTeam?: string[];
+  duration?: "8H" | "24H";
+}
+
+/** Identity-only search. Never reveals access status. */
+export function searchPatients(query: string) {
+  return api.get<PatientIdentity[]>(`/patients?query=${encodeURIComponent(query)}`);
+}
+
+/** Resolves the four trust states; 403 carries the exact deny reason. */
 export function getPatient(id: string) {
   return api.get<PatientRecordView>(`/patients/${id}`);
 }
 
-/** Admin only: register patient + optional care-team assignment in one call */
+/** Admin registers a patient; care team members receive initial STANDARD passports. */
 export function registerPatient(data: PatientRegisterRequest) {
-  return api.post<PatientRegisterResponse>("/patients", data);
+  return api.post<{ id: string; patientCode: string; grantedTo?: string[] }>("/patients", data);
 }

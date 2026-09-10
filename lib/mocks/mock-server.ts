@@ -461,6 +461,53 @@ export async function mockRequest<T>(
     return { success: true } as T;
   }
 
+    // POST /patients (Admin registers a patient; care team gets initial STANDARD passports)
+  if (method === "POST" && path === "/patients") {
+    if (!me || roleOf(me) !== "ADMIN") throw new MockApiError("Admin only.", 403);
+    const { name, dob, allergies, careTeam, duration } = body as {
+      name: string;
+      dob: string;
+      allergies?: string[];
+      careTeam?: string[];
+      duration?: "8H" | "24H";
+    };
+    if (!name || !name.trim()) throw new MockApiError("Patient name is required.", 400);
+    if (!dob) throw new MockApiError("Date of birth is required.", 400);
+    const finalDuration: "8H" | "24H" = duration ?? "8H";
+    const hours = finalDuration === "24H" ? 24 : 8;
+    const nextNumber = 10000 + patients.length + 1;
+    const patient: MockPatient = {
+      id: `pt-${Date.now()}`,
+      name: name.trim(),
+      patientCode: `LUTH-PT-${nextNumber}`,
+      dob,
+      allergies: allergies ?? [],
+    };
+    patients.push(patient);
+    const grantedTo: string[] = [];
+    for (const healthId of careTeam ?? []) {
+      const member = users.find((u) => u.healthId === healthId);
+      if (!member || member.status !== "ACTIVE" || member.role === "ADMIN") continue;
+      passports.push({
+        id: `pas-${Date.now()}-${healthId}`,
+        type: "STANDARD",
+        status: "ACTIVE",
+        userId: member.healthId,
+        patientId: patient.id,
+        purpose: "Assigned care team member",
+        scope: "Notes, Labs, Prescriptions, Uploads, Allergies",
+        duration: finalDuration,
+        expiresAt: hoursFromNow(hours),
+        createdAt: new Date().toISOString(),
+        grantedById: me,
+        renewalCount: 0,
+        flagged: false,
+      });
+      grantedTo.push(member.healthId);
+    }
+    return { id: patient.id, patientCode: patient.patientCode, grantedTo } as T;
+  }
+
   // GET /patients?query= (identity only)
   if (method === "GET" && path === "/patients") {
     if (!me) throw new MockApiError("Session expired. Please sign in again.", 401);
