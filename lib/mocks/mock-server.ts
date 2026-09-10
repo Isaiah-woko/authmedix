@@ -36,14 +36,15 @@ interface MockUser {
   status: UserStatus;
   failedLogins: number;
   locked: boolean;
+  createdAt: string;
 }
 
 const users: MockUser[] = [
-  { id: "u-doctor", healthId: "LUTH-DOC-0231", email: "doctor@meditrust.dev", password: "Passw0rd!Doc", name: "Dr. Amina Bello", role: "DOCTOR", hospitalId: "LUTH", mustChangePassword: true, status: "ACTIVE", failedLogins: 0, locked: false },
-  { id: "u-nurse", healthId: "LUTH-NUR-0112", email: "nurse@meditrust.dev", password: "Passw0rd!Nur", name: "Musa Okafor, RN", role: "NURSE", hospitalId: "LUTH", mustChangePassword: false, status: "ACTIVE", failedLogins: 0, locked: false },
-  { id: "u-pharmacist", healthId: "LUTH-PHA-0045", email: "pharmacist@meditrust.dev", password: "Passw0rd!Pha", name: "Grace Adeyemi", role: "PHARMACIST", hospitalId: "LUTH", mustChangePassword: false, status: "ACTIVE", failedLogins: 0, locked: false },
-  { id: "u-lab", healthId: "LUTH-LAB-0091", email: "lab@meditrust.dev", password: "Passw0rd!Lab", name: "Blessing Okoro", role: "LAB", hospitalId: "LUTH", mustChangePassword: false, status: "ACTIVE", failedLogins: 0, locked: false },
-  { id: "u-admin", healthId: "LUTH-ADM-0007", email: "admin@meditrust.dev", password: "Passw0rd!Adm", name: "Chidi Balogun", role: "ADMIN", hospitalId: "LUTH", mustChangePassword: false, status: "ACTIVE", failedLogins: 0, locked: false },
+  { id: "u-doctor", healthId: "LUTH-DOC-0231", email: "doctor@meditrust.dev", password: "Passw0rd!Doc", name: "Dr. Amina Bello", role: "DOCTOR", hospitalId: "LUTH", mustChangePassword: true, status: "ACTIVE", failedLogins: 0, locked: false, createdAt: new Date(Date.now() - 86400000 * 30).toISOString() },
+  { id: "u-nurse", healthId: "LUTH-NUR-0112", email: "nurse@meditrust.dev", password: "Passw0rd!Nur", name: "Musa Okafor, RN", role: "NURSE", hospitalId: "LUTH", mustChangePassword: false, status: "ACTIVE", failedLogins: 0, locked: false, createdAt: new Date(Date.now() - 86400000 * 28).toISOString() },
+  { id: "u-pharmacist", healthId: "LUTH-PHA-0045", email: "pharmacist@meditrust.dev", password: "Passw0rd!Pha", name: "Grace Adeyemi", role: "PHARMACIST", hospitalId: "LUTH", mustChangePassword: false, status: "ACTIVE", failedLogins: 0, locked: false, createdAt: new Date(Date.now() - 86400000 * 25).toISOString() },
+  { id: "u-lab", healthId: "LUTH-LAB-0091", email: "lab@meditrust.dev", password: "Passw0rd!Lab", name: "Blessing Okoro", role: "LAB", hospitalId: "LUTH", mustChangePassword: false, status: "ACTIVE", failedLogins: 0, locked: false, createdAt: new Date(Date.now() - 86400000 * 20).toISOString() },
+  { id: "u-admin", healthId: "LUTH-ADM-0007", email: "admin@meditrust.dev", password: "Passw0rd!Adm", name: "Chidi Balogun", role: "ADMIN", hospitalId: "LUTH", mustChangePassword: false, status: "ACTIVE", failedLogins: 0, locked: false, createdAt: new Date(Date.now() - 86400000 * 60).toISOString() },
 ];
 
 export const MOCK_DEMO_CODE = "123456";
@@ -143,6 +144,63 @@ interface MockRequest {
 const passportRequests: MockRequest[] = [
   { id: "req-1", userId: "LUTH-DOC-0231", patientId: "pt-4", purpose: "Clinical consultation and treatment", scope: "Notes, Labs, Prescriptions, Uploads, Allergies", status: "PENDING", createdAt: hoursFromNow(-1) },
 ];
+
+// ---- Demo persistence: keep mock mutations across page refreshes ----
+const DB_KEY = "meditrust.mock.db";
+
+function persistDb() {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(
+      DB_KEY,
+      JSON.stringify({ users, patients, records, passports, passportRequests })
+    );
+  } catch {
+    // storage unavailable: demo continues in memory only
+  }
+}
+
+(function hydrateDb() {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = window.sessionStorage.getItem(DB_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw) as {
+      users?: MockUser[];
+      patients?: MockPatient[];
+      records?: MockRecord[];
+      passports?: MockPassport[];
+      passportRequests?: MockRequest[];
+    };
+    if (saved.users && saved.users.length > 0) {
+      users.length = 0;
+      users.push(...saved.users);
+    }
+    if (saved.patients && saved.patients.length > 0) {
+      patients.length = 0;
+      patients.push(...saved.patients);
+    }
+    if (saved.records && saved.records.length > 0) {
+      records.length = 0;
+      records.push(...saved.records);
+    }
+    if (saved.passports && saved.passports.length > 0) {
+      passports.length = 0;
+      passports.push(...saved.passports);
+    }
+    if (saved.passportRequests && saved.passportRequests.length > 0) {
+      passportRequests.length = 0;
+      passportRequests.push(...saved.passportRequests);
+    }
+  } catch {
+    // corrupt saved state: fall back to the seed data above
+  }
+})();
+
+if (typeof window !== "undefined") {
+  window.setInterval(persistDb, 800);
+}
+// ---- end demo persistence ----
 
 const ROLE_RECORD_VISIBILITY: Record<UserRole, RecordType[]> = {
   DOCTOR: ["NOTE", "LAB", "PRESCRIPTION", "UPLOAD"],
@@ -265,6 +323,35 @@ function isActive(p: MockPassport): boolean {
 
 function identityOf(p: MockPatient): PatientIdentity {
   return { id: p.id, name: p.name, patientCode: p.patientCode };
+}
+
+function generateHealthId(hospitalId: string, role: UserRole): string {
+  const prefix = role === "ADMIN" ? "ADM" : role === "DOCTOR" ? "DOC" : role === "NURSE" ? "NUR" : role === "PHARMACIST" ? "PHA" : "LAB";
+  const num = String(users.length + 1).padStart(4, "0");
+  return `${hospitalId}-${prefix}-${num}`;
+}
+
+function generateTempPassword(): string {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  let pwd = "";
+  for (let i = 0; i < 12; i++) {
+    pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return pwd;
+}
+
+function staffRowShape(u: MockUser) {
+  return {
+    id: u.id,
+    healthId: u.healthId,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    status: u.status,
+    mustChangePassword: u.mustChangePassword,
+    failedLoginAttempts: u.failedLogins,
+    createdAt: u.createdAt,
+  };
 }
 
 export async function mockRequest<T>(
@@ -549,6 +636,86 @@ export async function mockRequest<T>(
     flowSet(KEY_STEPUP_CODE, code);
     console.info("[mock] step-up code:", code);
     return { codeSent: true } as T;
+  }
+
+  // GET /admin/staff
+  if (method === "GET" && path === "/admin/staff") {
+    if (!me || roleOf(me) !== "ADMIN") throw new MockApiError("Admin only.", 403);
+    return users.map(staffRowShape) as T;
+  }
+
+  // POST /admin/staff (with step-up code)
+  if (method === "POST" && path === "/admin/staff") {
+    if (!me || roleOf(me) !== "ADMIN") throw new MockApiError("Admin only.", 403);
+    const { name, email, role, otpCode } = body as {
+      name: string;
+      email: string;
+      role: UserRole;
+      otpCode: string;
+    };
+    const stored = flowGet(KEY_STEPUP_CODE);
+    if (!otpCode || otpCode !== stored) {
+      throw new MockApiError("Verification code wrong or missing. Request a new one.", 403, "step_up_verification_failed");
+    }
+    flowSet(KEY_STEPUP_CODE, null);
+    if (!name || !email) {
+      throw new MockApiError("Name and email are required.", 400);
+    }
+    if (users.some((u) => u.email === email)) {
+      throw new MockApiError("An account with that email already exists.", 409);
+    }
+    const hospitalId = "LUTH";
+    const tempPassword = generateTempPassword();
+    const newUser: MockUser = {
+      id: `u-${Date.now()}`,
+      healthId: generateHealthId(hospitalId, role),
+      email,
+      password: tempPassword,
+      name,
+      role,
+      hospitalId,
+      mustChangePassword: true,
+      status: "ACTIVE",
+      failedLogins: 0,
+      locked: false,
+      createdAt: new Date().toISOString(),
+    };
+    users.push(newUser);
+    return { ...staffRowShape(newUser), tempPassword } as T;
+  }
+
+  // PATCH /admin/staff/:id
+  const staffUpdateMatch = path.match(/^\/admin\/staff\/([^/]+)$/);
+  if (method === "PATCH" && staffUpdateMatch) {
+    if (!me || roleOf(me) !== "ADMIN") throw new MockApiError("Admin only.", 403);
+    const user = users.find((u) => u.id === staffUpdateMatch[1]);
+    if (!user) throw new MockApiError("Staff member not found.", 404);
+    const { status } = body as { status?: "ACTIVE" | "SUSPENDED" };
+    if (status) {
+      user.status = status;
+      if (status === "SUSPENDED") {
+        passports
+          .filter((p) => p.userId === user.healthId && isActive(p))
+          .forEach((p) => {
+            p.status = "REVOKED";
+          });
+      }
+    }
+    user.failedLogins = 0;
+    user.locked = false;
+    return staffRowShape(user) as T;
+  }
+
+  // POST /admin/staff/:id/force-reset
+  const forceResetMatch = path.match(/^\/admin\/staff\/([^/]+)\/force-reset$/);
+  if (method === "POST" && forceResetMatch) {
+    if (!me || roleOf(me) !== "ADMIN") throw new MockApiError("Admin only.", 403);
+    const user = users.find((u) => u.id === forceResetMatch[1]);
+    if (!user) throw new MockApiError("Staff member not found.", 404);
+    user.mustChangePassword = true;
+    user.failedLogins = 0;
+    user.locked = false;
+    return { ok: true, healthId: user.healthId } as T;
   }
 
   // POST /break-glass
