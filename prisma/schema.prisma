@@ -1,0 +1,265 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Hospital {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  name        String
+  trustedCidr String?
+  users       User[]
+  patients    Patient[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id                  String     @id @default(cuid())
+  healthId            String     @unique
+  name                String
+  email               String     @unique
+  passwordHash        String
+  mustChangePassword  Boolean    @default(true)
+  role                Role
+  status              UserStatus @default(ACTIVE)
+  sessionTtlHrs       Int        @default(6)
+  failedLoginAttempts Int        @default(0)
+  sessionInvalidatedAt DateTime?
+  hospitalId          String
+  hospital            Hospital   @relation(fields: [hospitalId], references: [id])
+
+  heldPassports     AccessPassport[] @relation("HeldBy")
+  grantedPassports  AccessPassport[] @relation("GrantedBy")
+  reviewedPassports AccessPassport[] @relation("ReviewedBy")
+  revokedPassports  AccessPassport[] @relation("RevokedBy")
+
+  requestsMade     PassportRequest[] @relation("Requested")
+  requestsReviewed PassportRequest[] @relation("ReviewedRequest")
+
+  auditLogs  AuditLog[]
+  loginCodes LoginCode[]
+  records    Record[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([hospitalId])
+  @@index([role])
+  @@index([status])
+  @@index([healthId, email])
+}
+
+enum Role {
+  DOCTOR
+  NURSE
+  PHARMACIST
+  LAB
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  LOCKED
+}
+
+model LoginCode {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  codeHash  String
+  salt      String
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId, used, expiresAt])
+  @@index([createdAt])
+}
+
+model Patient {
+  id          String   @id @default(cuid())
+  patientCode String   @unique
+  hospitalId  String
+  hospital    Hospital @relation(fields: [hospitalId], references: [id])
+  name        String
+  dob         DateTime
+  allergies   String[] @default([])
+
+  records   Record[]
+  passports AccessPassport[]
+  requests  PassportRequest[]
+  auditLogs AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([hospitalId])
+  @@index([patientCode])
+  @@index([name])
+}
+
+model Record {
+  id          String     @id @default(cuid())
+  patientId   String
+  patient     Patient    @relation(fields: [patientId], references: [id])
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id])
+  type        RecordType
+  content     String
+  contentHash String?
+  createdAt   DateTime   @default(now())
+
+  @@index([patientId])
+  @@index([authorId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([patientId, type])
+}
+
+enum RecordType {
+  NOTE
+  LAB
+  PRESCRIPTION
+  UPLOAD
+}
+
+model PassportRequest {
+  id String @id @default(cuid())
+
+  requesterId String
+  requester   User   @relation("Requested", fields: [requesterId], references: [id])
+
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+
+  purpose String
+  scope   String[]
+
+  status RequestStatus @default(PENDING)
+
+  reviewedById String?
+  reviewedBy   User?     @relation("ReviewedRequest", fields: [reviewedById], references: [id])
+  reviewedAt   DateTime?
+
+  denialReason String?
+
+  resultingPassportId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([requesterId])
+  @@index([patientId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([patientId, status])
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+model AccessPassport {
+  id     String         @id @default(cuid())
+  type   PassportType   @default(STANDARD)
+  status PassportStatus @default(ACTIVE)
+
+  userId String
+  user   User   @relation("HeldBy", fields: [userId], references: [id])
+
+  grantedById String?
+  grantedBy   User?   @relation("GrantedBy", fields: [grantedById], references: [id])
+
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+
+  purpose String
+  scope   String[]
+
+  reasonCategory BreakGlassReason?
+  reasonDetail   String?
+
+  flagged  Boolean @default(false)
+  reviewed Boolean @default(false)
+
+  reviewedById String?
+  reviewedBy   User?     @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  reviewNote   String?
+  reviewedAt   DateTime?
+
+  revokedById  String?
+  revokedBy    User?     @relation("RevokedBy", fields: [revokedById], references: [id])
+  revokedAt    DateTime?
+  revokeReason String?
+
+  renewalCount Int @default(0)
+
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([patientId])
+  @@index([status])
+  @@index([type])
+  @@index([flagged, reviewed])
+  @@index([expiresAt])
+  @@index([userId, patientId])
+  @@index([userId, patientId, status])
+  @@index([patientId, status])
+}
+
+enum PassportType {
+  STANDARD
+  REFERRAL
+  BREAK_GLASS
+}
+
+enum PassportStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum BreakGlassReason {
+  LIFE_THREATENING
+  UNCONSCIOUS_UNRESPONSIVE
+  MEDICATION_ALLERGY_EMERGENCY
+  TRAUMA
+  CRITICAL_DIAGNOSTIC_INFO
+  OTHER
+}
+
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  seq       Int      @unique @default(autoincrement())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  patientId String?
+  patient   Patient? @relation(fields: [patientId], references: [id])
+  action    String
+  outcome   String
+  reason    String?
+  flagged   Boolean  @default(false)
+  prevHash  String
+  entryHash String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([patientId])
+  @@index([action])
+  @@index([outcome])
+  @@index([flagged])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([patientId, createdAt])
+}
