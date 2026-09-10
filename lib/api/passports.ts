@@ -1,32 +1,55 @@
 import { api } from "./client";
-import type {
-  AccessPassport,
-  GrantPassportRequest,
-  RenewPassportResponse,
-  RevokePassportRequest,
-} from "@/types/passport";
 
-/** The caller's own active passports, powers the clinical dashboard. */
+export interface ActivePassportRow {
+  id: string;
+  type: "STANDARD" | "REFERRAL" | "BREAK_GLASS";
+  status: "ACTIVE" | "EXPIRED" | "REVOKED";
+  patientId: string;
+  purpose: string;
+  scope: string;
+  duration?: "8H" | "24H" | "48H" | "2H";
+  expiresAt: string;
+  createdAt: string;
+  renewalCount: number;
+  flagged: boolean;
+  userName?: string;
+  userHealthId?: string;
+  userRole?: string;
+  patientName?: string;
+  patientCode?: string;
+}
+
+export interface GrantPassportPayload {
+  type: "STANDARD" | "REFERRAL";
+  healthId: string;
+  patientId: string;
+  purpose: string;
+  scope: string;
+  duration?: "8H" | "24H";
+  otpCode: string;
+}
+
+/** Clinical dashboard list: only currently-valid passports, soonest expiry first. */
 export function getMyActivePassports() {
-  return api.get<AccessPassport[]>("/passports/mine");
+  return api.get<ActivePassportRow[]>("/passports/mine");
 }
 
-/** Admin only: STANDARD (8h/24h) or REFERRAL (fixed 48h, duration ignored server-side). */
-export function grantPassport(data: GrantPassportRequest) {
-  return api.post<AccessPassport>("/passports", data);
-}
-
-/** Powers the revoke list on the Grant Passport / Referral screen. */
+/** Admin revoke list. */
 export function getActivePassports() {
-  return api.get<AccessPassport[]>("/passports?active=true");
+  return api.get<ActivePassportRow[]>("/passports?active=true");
 }
 
-/** Self-renew. STANDARD/REFERRAL only, never wire this for BREAK_GLASS. */
+/** Admin direct grant or referral push. Step-up code required. REFERRAL is fixed 48h server-side. */
+export function grantPassport(data: GrantPassportPayload) {
+  return api.post<ActivePassportRow>("/passports", data);
+}
+
+/** Holder-only self renew. STANDARD and REFERRAL only, never break-glass. */
 export function renewPassport(id: string) {
-  return api.post<RenewPassportResponse>(`/passports/${id}/renew`);
+  return api.post<{ success?: boolean; newExpiresAt?: string }>(`/passports/${id}/renew`);
 }
 
-/** Admin revokes before expiry, takes effect immediately. */
-export function revokePassport(id: string, data: RevokePassportRequest) {
-  return api.post<AccessPassport>(`/passports/${id}/revoke`, data);
+/** Admin revokes before expiry. Immediate effect. Never offered for BREAK_GLASS. */
+export function revokePassport(id: string, data: { revokeReason: string }) {
+  return api.post<ActivePassportRow>(`/passports/${id}/revoke`, data);
 }

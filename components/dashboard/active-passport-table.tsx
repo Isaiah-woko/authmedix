@@ -5,9 +5,9 @@ import { PassportTypeBadge } from "@/components/patients/passport-type-badge";
 import { useCountdown } from "@/hooks/use-countdown";
 import { formatCountdownCompact } from "@/lib/dates";
 import { ROUTES } from "@/lib/routes";
-import type { AccessPassport } from "@/types/passport";
+import type { ActivePassportRow } from "@/lib/api/passports";
 
-function Row({ passport }: { passport: AccessPassport }) {
+function Row({ passport }: { passport: ActivePassportRow }) {
   const remaining = useCountdown(passport.expiresAt);
   const expired = remaining?.isExpired === true;
   const soon = !expired && (remaining?.totalSeconds ?? 0) <= 30 * 60;
@@ -17,7 +17,7 @@ function Row({ passport }: { passport: AccessPassport }) {
     : passport.type === "BREAK_GLASS"
       ? "text-alert-coral"
       : passport.type === "REFERRAL"
-        ? "text-amber-watch"
+        ? "text-deep-indigo"
         : soon
           ? "text-amber-watch"
           : "text-trust-teal";
@@ -43,7 +43,7 @@ function Row({ passport }: { passport: AccessPassport }) {
   );
 }
 
-export function ActivePassportTable({ passports }: { passports: AccessPassport[] }) {
+export function ActivePassportTable({ passports }: { passports: ActivePassportRow[] }) {
   return (
     <section className="overflow-hidden rounded border border-section-line bg-white">
       <table className="w-full border-collapse text-left">

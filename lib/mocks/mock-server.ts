@@ -45,6 +45,7 @@ const users: MockUser[] = [
   { id: "u-pharmacist", healthId: "LUTH-PHA-0045", email: "pharmacist@meditrust.dev", password: "Passw0rd!Pha", name: "Grace Adeyemi", role: "PHARMACIST", hospitalId: "LUTH", mustChangePassword: false, status: "ACTIVE", failedLogins: 0, locked: false, createdAt: new Date(Date.now() - 86400000 * 25).toISOString() },
   { id: "u-lab", healthId: "LUTH-LAB-0091", email: "lab@meditrust.dev", password: "Passw0rd!Lab", name: "Blessing Okoro", role: "LAB", hospitalId: "LUTH", mustChangePassword: false, status: "ACTIVE", failedLogins: 0, locked: false, createdAt: new Date(Date.now() - 86400000 * 20).toISOString() },
   { id: "u-admin", healthId: "LUTH-ADM-0007", email: "admin@meditrust.dev", password: "Passw0rd!Adm", name: "Chidi Balogun", role: "ADMIN", hospitalId: "LUTH", mustChangePassword: false, status: "ACTIVE", failedLogins: 0, locked: false, createdAt: new Date(Date.now() - 86400000 * 60).toISOString() },
+  { id: "u-rsh-doc", healthId: "RSH-DOC-0001", email: "doctor@rsh.dev", password: "Passw0rd!Rsh", name: "Dr. Tobi Peters", role: "DOCTOR", hospitalId: "RSH", mustChangePassword: false, status: "ACTIVE", failedLogins: 0, locked: false, createdAt: new Date(Date.now() - 86400000 * 15).toISOString() },
 ];
 
 export const MOCK_DEMO_CODE = "123456";
@@ -326,7 +327,8 @@ function identityOf(p: MockPatient): PatientIdentity {
 }
 
 function generateHealthId(hospitalId: string, role: UserRole): string {
-  const prefix = role === "ADMIN" ? "ADM" : role === "DOCTOR" ? "DOC" : role === "NURSE" ? "NUR" : role === "PHARMACIST" ? "PHA" : "LAB";
+  const prefix =
+    role === "ADMIN" ? "ADM" : role === "DOCTOR" ? "DOC" : role === "NURSE" ? "NUR" : role === "PHARMACIST" ? "PHA" : "LAB";
   const num = String(users.length + 1).padStart(4, "0");
   return `${hospitalId}-${prefix}-${num}`;
 }
@@ -540,6 +542,71 @@ export async function mockRequest<T>(
     passport.expiresAt = new Date(Date.now() + addHours * 3_600_000).toISOString();
     passport.renewalCount += 1;
     return { success: true, newExpiresAt: passport.expiresAt } as T;
+  }
+
+  // POST /passports (Admin direct grant or referral push, step-up required)
+  if (method === "POST" && path === "/passports") {
+    if (!me || roleOf(me) !== "ADMIN") throw new MockApiError("Admin only.", 403);
+    const stored = flowGet(KEY_STEPUP_CODE);
+    const { type, healthId, patientId, purpose, scope, duration, otpCode } = body as {
+      type: "STANDARD" | "REFERRAL";
+      healthId: string;
+      patientId: string;
+      purpose: string;
+      scope: string;
+      duration?: "8H" | "24H";
+      otpCode: string;
+    };
+    if (!otpCode || otpCode !== stored) {
+      throw new MockApiError("Verification code wrong or missing. Request a new one.", 403, "step_up_verification_failed");
+    }
+    flowSet(KEY_STEPUP_CODE, null);
+    const target = users.find((u) => u.healthId === healthId);
+    if (!target || target.status !== "ACTIVE") {
+      throw new MockApiError("Target worker not found or inactive.", 404);
+    }
+    const patient = patients.find((p) => p.id === patientId);
+    if (!patient) throw new MockApiError("Patient not found.", 404);
+    const isReferral = type === "REFERRAL";
+    const finalDuration: "8H" | "24H" | "48H" = isReferral ? "48H" : duration ?? "8H";
+    const hours = finalDuration === "48H" ? 48 : finalDuration === "24H" ? 24 : 8;
+    const passport: MockPassport = {
+      id: `pas-${Date.now()}`,
+      type,
+      status: "ACTIVE",
+      userId: target.healthId,
+      patientId,
+      purpose: purpose || (isReferral ? "Inter-hospital referral" : "Clinical consultation and treatment"),
+      scope: scope || "Notes, Labs, Prescriptions, Uploads, Allergies",
+      duration: finalDuration,
+      expiresAt: hoursFromNow(hours),
+      createdAt: new Date().toISOString(),
+      grantedById: me,
+      renewalCount: 0,
+      flagged: false,
+    };
+    passports.push(passport);
+    return withJoins(passport) as T;
+  }
+
+  // POST /passports/:id/revoke (immediate effect, reason required, never break-glass)
+  const revokeMatch = path.match(/^\/passports\/([^/]+)\/revoke$/);
+  if (method === "POST" && revokeMatch) {
+    if (!me || roleOf(me) !== "ADMIN") throw new MockApiError("Admin only.", 403);
+    const passport = passports.find((p) => p.id === revokeMatch[1]);
+    if (!passport) throw new MockApiError("Passport not found.", 404);
+    if (passport.type === "BREAK_GLASS") {
+      throw new MockApiError("Break-glass passports cannot be revoked. They expire on their own clock.", 400);
+    }
+    if (!isActive(passport)) {
+      throw new MockApiError("This passport is already inactive.", 400);
+    }
+    const { revokeReason } = body as { revokeReason?: string };
+    if (!revokeReason || !revokeReason.trim()) {
+      throw new MockApiError("A revoke reason is required.", 400);
+    }
+    passport.status = "REVOKED";
+    return withJoins(passport) as T;
   }
 
   // GET /passport-requests (Admin sees the whole hospital queue when pending)

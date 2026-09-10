@@ -8,12 +8,11 @@ import { getFlaggedEvents, getPassportRequests } from "@/lib/api";
 import { getMyActivePassports } from "@/lib/api/passports";
 import { isClinicalRole } from "@/lib/roles";
 import { useSession } from "@/providers/session-provider";
-import type { AccessPassport } from "@/types/passport";
+import type { ActivePassportRow } from "@/lib/api/passports";
 
 export default function DashboardPage() {
   const { session } = useSession();
-  const [passports, setPassports] = useState<AccessPassport[] | null>(null);
-  const [pendingCount, setPendingCount] = useState<number | null>(null);
+const [passports, setPassports] = useState<ActivePassportRow[] | null>(null);  const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [flaggedCount, setFlaggedCount] = useState<number | null>(null);
 
   const role = session?.user.role;
