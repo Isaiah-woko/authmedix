@@ -1,32 +1,71 @@
 import { api } from "./client";
-import type { AuditLogEntry } from "@/types/audit";
-import type {
-  AddStaffRequest,
-  AddStaffResponse,
-  StaffMember,
-  UpdateStaffRequest,
-} from "@/types/staff";
+
+export interface StaffRow {
+  id: string;
+  healthId: string;
+  name: string;
+  email: string;
+  role: "DOCTOR" | "NURSE" | "PHARMACIST" | "LAB" | "ADMIN";
+  status: "ACTIVE" | "SUSPENDED";
+  mustChangePassword: boolean;
+  failedLoginAttempts?: number;
+  createdAt: string;
+}
+
+export interface NewStaffPayload {
+  name: string;
+  email: string;
+  role: StaffRow["role"];
+  otpCode: string;
+}
+
+export interface NewStaffResult extends StaffRow {
+  tempPassword: string;
+}
+
+export interface FlaggedRow {
+  id: string;
+  userId: string;
+  userName?: string;
+  patientId: string;
+  patientName?: string;
+  action: string;
+  outcome: string;
+  flagged: boolean;
+  reviewed: boolean;
+  timestamp: string;
+  reasonCategory?: string;
+  reasonDetail?: string;
+  highPriority?: boolean;
+  reviewedBy?: string;
+}
 
 export function getStaff() {
-  return api.get<StaffMember[]>("/admin/staff");
+  return api.get<StaffRow[]>("/admin/staff");
 }
 
-/** Response carries a display-once temp password — UI must say "copy this now" */
-export function addStaff(data: AddStaffRequest) {
-  return api.post<AddStaffResponse>("/admin/staff", data);
+/** Step-up 2FA: a fresh single-use code for each sensitive action. */
+export function stepUp() {
+  return api.post<{ codeSent: boolean }>("/admin/step-up");
 }
 
-/** SUSPENDED also auto-revokes all of that worker's ACTIVE passports server-side */
-export function updateStaffStatus(id: string, data: UpdateStaffRequest) {
-  return api.patch<StaffMember>(`/admin/staff/${id}`, data);
+export function addStaff(data: NewStaffPayload) {
+  return api.post<NewStaffResult>("/admin/staff", data);
 }
 
-/** Unreviewed break-glass events → Flagged Review Queue */
+export function updateStaffStatus(id: string, data: { status: "ACTIVE" | "SUSPENDED" }) {
+  return api.patch<StaffRow>(`/admin/staff/${id}`, data);
+}
+
+/** Incident lever: forces a new password and kills live sessions instantly. */
+export function forceResetPassword(id: string) {
+  return api.post<{ ok: boolean; healthId: string }>(`/admin/staff/${id}/force-reset`);
+}
+
 export function getFlaggedEvents() {
-  return api.get<AuditLogEntry[]>("/admin/audit?flagged=true&reviewed=false");
+  return api.get<FlaggedRow[]>("/admin/audit?flagged=true&reviewed=false");
 }
 
-/** NOTE: :id here is the AccessPassport id, not an AuditLog id (per contract) */
-export function markEventReviewed(id: string, reviewNote?: string) {
-  return api.post<AuditLogEntry>(`/admin/audit/${id}/review`, { reviewNote });
+export function markEventReviewed(id: string, data: { reviewNote?: string }) {
+  return api.post<FlaggedRow>(`/admin/audit/${id}/review`, data);
 }

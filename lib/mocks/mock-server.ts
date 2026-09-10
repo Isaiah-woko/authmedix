@@ -129,8 +129,19 @@ const passports: MockPassport[] = [
   { id: "pas-8", type: "STANDARD", status: "ACTIVE", userId: "LUTH-PHA-0045", patientId: "pt-6", purpose: "Medication review and dispensing", scope: "Prescriptions, Allergies", duration: "8H", expiresAt: hoursFromNow(5), createdAt: hoursFromNow(-3), grantedById: "LUTH-ADM-0007", renewalCount: 0, flagged: false },
 ];
 
-const passportRequests = [
-  { id: "req-1", userId: "LUTH-DOC-0231", patientId: "pt-4", purpose: "Clinical consultation and treatment", scope: "Notes, Labs, Prescriptions, Uploads, Allergies", status: "PENDING" as const, createdAt: hoursFromNow(-1) },
+interface MockRequest {
+  id: string;
+  userId: string;
+  patientId: string;
+  purpose: string;
+  scope: string;
+  status: "PENDING" | "APPROVED" | "DENIED";
+  createdAt: string;
+  denialReason?: string;
+}
+
+const passportRequests: MockRequest[] = [
+  { id: "req-1", userId: "LUTH-DOC-0231", patientId: "pt-4", purpose: "Clinical consultation and treatment", scope: "Notes, Labs, Prescriptions, Uploads, Allergies", status: "PENDING", createdAt: hoursFromNow(-1) },
 ];
 
 const ROLE_RECORD_VISIBILITY: Record<UserRole, RecordType[]> = {
@@ -153,6 +164,7 @@ const KEY_ACTIVE = "meditrust.mock.activeHealthId";
 const KEY_CODE_EXPIRY = "meditrust.mock.codeExpiresAt";
 const KEY_CODE_FAILS = "meditrust.mock.codeFails";
 const KEY_SESSION = "meditrust.mock.session";
+const KEY_STEPUP_CODE = "meditrust.mock.stepUpCode";
 
 function flowGet(key: string): string | null {
   if (typeof window === "undefined") return null;
@@ -211,13 +223,14 @@ function withJoins(p: MockPassport) {
   };
 }
 
-function withRequestJoins(r: (typeof passportRequests)[number]) {
+function withRequestJoins(r: MockRequest) {
   const patient = patients.find((x) => x.id === r.patientId);
   const user = users.find((u) => u.healthId === r.userId);
   return {
     ...r,
     userName: user?.name,
     userHealthId: user?.healthId,
+    userRole: user?.role,
     patientName: patient?.name,
     patientCode: patient?.patientCode,
   };
@@ -442,14 +455,16 @@ export async function mockRequest<T>(
     return { success: true, newExpiresAt: passport.expiresAt } as T;
   }
 
-  // GET /passport-requests
+  // GET /passport-requests (Admin sees the whole hospital queue when pending)
   if (method === "GET" && path === "/passport-requests") {
     if (!me) throw new MockApiError("Session expired. Please sign in again.", 401);
-    const mine = passportRequests.filter((r) => r.userId === me).map(withRequestJoins);
+    const role = roleOf(me);
+    const all = passportRequests.map(withRequestJoins);
     if (params.get("status") === "pending") {
-      return mine.filter((r) => r.status === "PENDING") as T;
+      const scoped = role === "ADMIN" ? all : all.filter((r) => r.userId === me);
+      return scoped.filter((r) => r.status === "PENDING") as T;
     }
-    return mine as T;
+    return all.filter((r) => r.userId === me) as T;
   }
 
   // POST /passport-requests
@@ -462,17 +477,78 @@ export async function mockRequest<T>(
     };
     const patient = patients.find((p) => p.id === patientId);
     if (!patient) throw new MockApiError("Patient not found.", 404);
-    const newRequest = {
+    const newRequest: MockRequest = {
       id: `req-${Date.now()}`,
       userId: me,
       patientId,
       purpose: purpose ?? "Clinical consultation",
       scope: scope ? scope.join(", ") : "Notes, Labs",
-      status: "PENDING" as const,
+      status: "PENDING",
       createdAt: new Date().toISOString(),
     };
     passportRequests.push(newRequest);
     return withRequestJoins(newRequest) as T;
+  }
+
+  // POST /passport-requests/:id/approve (Admin + step-up code)
+  const approveMatch = path.match(/^\/passport-requests\/([^/]+)\/approve$/);
+  if (method === "POST" && approveMatch) {
+    if (!me || roleOf(me) !== "ADMIN") throw new MockApiError("Admin only.", 403);
+    const stored = flowGet(KEY_STEPUP_CODE);
+    const { duration, otpCode } = body as { duration: "8H" | "24H"; otpCode?: string };
+    if (!otpCode || otpCode !== stored) {
+      throw new MockApiError("Verification code wrong or missing. Request a new one.", 403, "step_up_verification_failed");
+    }
+    flowSet(KEY_STEPUP_CODE, null);
+    const request = passportRequests.find((r) => r.id === approveMatch[1]);
+    if (!request || request.status !== "PENDING") {
+      throw new MockApiError("Request not found or already reviewed.", 404);
+    }
+    const hours = duration === "24H" ? 24 : 8;
+    const passport: MockPassport = {
+      id: `pas-${Date.now()}`,
+      type: "STANDARD",
+      status: "ACTIVE",
+      userId: request.userId,
+      patientId: request.patientId,
+      purpose: request.purpose,
+      scope: request.scope,
+      duration,
+      expiresAt: hoursFromNow(hours),
+      createdAt: new Date().toISOString(),
+      grantedById: me,
+      renewalCount: 0,
+      flagged: false,
+    };
+    passports.push(passport);
+    request.status = "APPROVED";
+    return { passport: withJoins(passport), updatedRequest: withRequestJoins(request) } as T;
+  }
+
+  // POST /passport-requests/:id/deny
+  const denyMatch = path.match(/^\/passport-requests\/([^/]+)\/deny$/);
+  if (method === "POST" && denyMatch) {
+    if (!me || roleOf(me) !== "ADMIN") throw new MockApiError("Admin only.", 403);
+    const request = passportRequests.find((r) => r.id === denyMatch[1]);
+    if (!request || request.status !== "PENDING") {
+      throw new MockApiError("Request not found or already reviewed.", 404);
+    }
+    const { denialReason } = body as { denialReason?: string };
+    if (!denialReason || !denialReason.trim()) {
+      throw new MockApiError("A denial reason is required.", 400);
+    }
+    request.status = "DENIED";
+    request.denialReason = denialReason.trim();
+    return { ok: true } as T;
+  }
+
+  // POST /admin/step-up (fresh single-use code, printed to the browser console)
+  if (method === "POST" && path === "/admin/step-up") {
+    if (!me || roleOf(me) !== "ADMIN") throw new MockApiError("Admin only.", 403);
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    flowSet(KEY_STEPUP_CODE, code);
+    console.info("[mock] step-up code:", code);
+    return { codeSent: true } as T;
   }
 
   // POST /break-glass
