@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Flag,
   Inbox,
@@ -13,56 +13,75 @@ import {
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { SessionCountdown } from "@/components/layout/session-countdown";
+import { useCountdown } from "@/hooks/use-countdown";
+import { formatCountdownHMS } from "@/lib/dates";
 import { formatRole } from "@/lib/format";
-import { getNavItems, ROUTES } from "@/lib/routes";
 import { useSession } from "@/providers/session-provider";
 
-const NAV_ICONS: Record<string, LucideIcon> = {
-  [ROUTES.DASHBOARD]: LayoutDashboard,
-  [ROUTES.SEARCH]: Search,
-  [ROUTES.ADMIN_STAFF]: Users,
-  [ROUTES.ADMIN_PATIENTS_NEW]: UserPlus,
-  [ROUTES.ADMIN_REQUESTS]: Inbox,
-  [ROUTES.ADMIN_PASSPORTS]: KeyRound,
-  [ROUTES.ADMIN_FLAGGED]: Flag,
-  [ROUTES.ADMIN_AUDIT]: ScrollText,
-};
+interface NavItem {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+}
 
-/** Persistent role-aware left navigation. Deep indigo shell per the Figma direction. */
+const CLINICAL_NAV: NavItem[] = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/search", label: "Patient Search", icon: Search },
+];
+
+const ADMIN_NAV: NavItem[] = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/staff", label: "Staff", icon: Users },
+  { href: "/admin/patients/new", label: "Patients", icon: UserPlus },
+  { href: "/admin/requests", label: "Requests Queue", icon: Inbox },
+  { href: "/admin/passports", label: "Grant Passport / Referral", icon: KeyRound },
+  { href: "/admin/flagged", label: "Flagged Review", icon: Flag },
+  { href: "/admin/audit", label: "Audit Log", icon: ScrollText },
+];
+
+function SessionCountdown({ expiresAt }: { expiresAt: string }) {
+  const remaining = useCountdown(expiresAt);
+  const expired = remaining?.isExpired === true;
+  const soon = !expired && (remaining?.totalSeconds ?? 0) <= 30 * 60;
+  const tone = expired ? "text-alert-coral" : soon ? "text-amber-watch" : "text-trust-teal";
+  return (
+    <p className="text-dense text-white/60">
+      Session ends in <span className={`identifier ${tone}`}>{formatCountdownHMS(expiresAt)}</span>
+    </p>
+  );
+}
+
 export function Sidebar() {
   const { session, signOut } = useSession();
   const pathname = usePathname();
-  const router = useRouter();
 
   if (!session) return null;
-  const items = getNavItems(session.user.role);
+
+  const nav = session.user.role === "ADMIN" ? ADMIN_NAV : CLINICAL_NAV;
 
   return (
-    <aside className="flex w-72 shrink-0 flex-col bg-deep-indigo">
-      <div className="border-b border-white/10 px-6 py-6">
-        <p className="text-page-title font-bold text-white">MediTrust</p>
-        <p className="mt-1 text-dense font-medium uppercase tracking-[0.18em] text-white/50">
-          Zero-trust clinical
-        </p>
+    <aside className="flex min-h-screen w-64 shrink-0 flex-col bg-deep-indigo">
+      <div className="px-5 py-6">
+        <p className="text-page-title font-semibold text-white">MediTrust</p>
+        <p className="mt-1 text-dense tracking-wide text-white/60">Zero-trust clinical</p>
       </div>
 
-      <nav className="flex-1 px-3 py-4">
+      <nav className="flex-1 px-3">
         <ul className="flex flex-col gap-1">
-          {items.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const Icon = NAV_ICONS[item.href] ?? LayoutDashboard;
+          {nav.map((item) => {
+            const active = pathname === item.href;
+            const Icon = item.icon;
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-body-lg transition-colors ${
+                  className={`flex items-center gap-3 rounded px-3 py-2 text-body transition-colors ${
                     active
-                      ? "bg-white/10 font-semibold text-white"
-                      : "font-medium text-white/60 hover:bg-white/5 hover:text-white"
+                      ? "bg-white/10 font-medium text-white"
+                      : "text-white/70 hover:bg-white/5 hover:text-white"
                   }`}
                 >
-                  <Icon size={18} className={active ? "text-white" : "text-white/60"} />
+                  <Icon className="h-4 w-4" />
                   {item.label}
                 </Link>
               </li>
@@ -71,22 +90,18 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      <div className="border-t border-white/10 px-6 py-5">
-        <p className="text-body-lg font-semibold text-white">{session.user.name}</p>
-        <p className="mt-0.5 text-body text-white/60">
-          {formatRole(session.user.role)} · {session.user.hospitalId}
-        </p>
-        <p className="identifier mt-1 text-dense text-white/50">{session.user.healthId}</p>
-        <div className="mt-3">
-          <SessionCountdown expiresAt={session.sessionExpiresAt} />
+      <div className="border-t border-white/10 px-5 py-4">
+        <p className="text-body font-medium text-white">{formatRole(session.user.role)}</p>
+        <p className="identifier mt-0.5 text-dense text-white/60">{session.user.healthId}</p>
+        <div className="mt-2">
+          <SessionCountdown expiresAt={session.user.sessionExpiresAt} />
         </div>
         <button
           type="button"
           onClick={() => {
-            signOut();
-            router.replace(ROUTES.LOGIN);
+            void signOut();
           }}
-          className="mt-3 text-body font-medium text-white/60 transition-colors hover:text-white"
+          className="mt-3 text-body text-white/70 transition-colors hover:text-white"
         >
           Sign out
         </button>

@@ -1,28 +1,28 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import { NoAccessState } from "@/components/patients/no-access-state";
 import { PatientRecordView } from "@/components/patients/patient-record-view";
 import { ApiClientError, getPatient, renewPassport } from "@/lib/api";
-import type { PatientRecordView as RecordViewData } from "@/lib/api/patients";
+import type { NormalizedRecordView } from "@/lib/api/patients";
 import { denyReasonToState } from "@/lib/access";
 import type { DenyState } from "@/lib/access";
 import type { PatientIdentity } from "@/types/patient";
 
 export default function PatientRecordPage() {
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const patientId = params.id;
 
-  const [data, setData] = useState<RecordViewData | null>(null);
+  const [data, setData] = useState<NormalizedRecordView | null>(null);
   const [denied, setDenied] = useState<{
     state: DenyState;
     patient: PatientIdentity | null;
   } | null>(null);
   const [renewing, setRenewing] = useState(false);
 
-  // Loading is derived: nothing fetched yet and nothing denied yet.
   const loading = data === null && denied === null;
 
   const load = useCallback(() => {
@@ -33,24 +33,32 @@ export default function PatientRecordPage() {
       })
       .catch((err: unknown) => {
         const error = err as ApiClientError;
+        const name = searchParams.get("name");
+        const identity: PatientIdentity | null = name
+          ? {
+              id: patientId,
+              name,
+              patientCode: searchParams.get("code") ?? "",
+            }
+          : null;
         if (error.status === 403) {
-          setDenied({ state: denyReasonToState(error.reason), patient: error.patient ?? null });
+          setDenied({ state: denyReasonToState(error.reason), patient: identity });
         } else {
-          setDenied({ state: "NO_PASSPORT", patient: null });
+          setDenied({ state: "NO_PASSPORT", patient: identity });
         }
         setData(null);
       });
-  }, [patientId]);
+  }, [patientId, searchParams]);
 
   useEffect(() => {
     load();
   }, [load]);
 
   async function handleRenew() {
-    if (!data) return;
+    if (!data?.passportId) return;
     setRenewing(true);
     try {
-      await renewPassport(data.passport.id);
+      await renewPassport(data.passportId);
       await load();
     } finally {
       setRenewing(false);

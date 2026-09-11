@@ -106,12 +106,16 @@ export default function GrantPassportPage() {
       patientId: selectedPatient?.id ?? "",
       purpose:
         purpose.trim() ||
-        (grantType === "REFERRAL" ? "Inter-hospital referral" : "Clinical consultation and treatment"),
+        (grantType === "REFERRAL"
+          ? "Inter-hospital referral"
+          : "Clinical consultation and treatment"),
       scope: scope.trim() || "Notes, Labs, Prescriptions, Uploads, Allergies",
       duration: grantType === "STANDARD" ? duration : undefined,
       otpCode,
     });
-    setNotice(`Passport granted to ${targetHealthId.trim()} for ${selectedPatient?.name ?? "the patient"}.`);
+    setNotice(
+      `Passport granted to ${targetHealthId.trim()} for ${selectedPatient?.name ?? "the patient"}.`
+    );
     setGrantOpen(false);
     setTargetHealthId("");
     setSelectedPatient(null);
@@ -238,7 +242,9 @@ export default function GrantPassportPage() {
                       onClick={() => setSelectedPatient(patient)}
                     >
                       <span className="text-body text-ink">{patient.name}</span>
-                      <span className="identifier text-dense text-slate">{patient.patientCode}</span>
+                      <span className="identifier text-dense text-slate">
+                        {patient.patientCode}
+                      </span>
                     </button>
                   </li>
                 ))}
@@ -247,7 +253,9 @@ export default function GrantPassportPage() {
             {selectedPatient && (
               <p className="mt-2 text-body text-ink">
                 Selected: {selectedPatient.name}{" "}
-                <span className="identifier text-dense text-slate">{selectedPatient.patientCode}</span>{" "}
+                <span className="identifier text-dense text-slate">
+                  {selectedPatient.patientCode}
+                </span>{" "}
                 <button
                   type="button"
                   className="text-dense text-deep-indigo hover:underline"
@@ -331,8 +339,8 @@ export default function GrantPassportPage() {
                     <p className="identifier text-dense text-slate">{passport.patientCode}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-body text-ink">{passport.userName}</p>
-                    <p className="identifier text-dense text-slate">{passport.userHealthId}</p>
+                    <p className="text-body text-ink">{passport.holderName}</p>
+                    <p className="identifier text-dense text-slate">{passport.holderHealthId}</p>
                   </td>
                   <td className="px-4 py-3">
                     <PassportTypeBadge type={passport.type} />
@@ -374,9 +382,11 @@ export default function GrantPassportPage() {
       {revokeTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 px-4">
           <div className="w-full max-w-sm rounded border border-alert-coral/40 bg-white p-6 shadow-lg">
-            <p className="text-section-header font-semibold text-alert-coral">Revoke this passport?</p>
+            <p className="text-section-header font-semibold text-alert-coral">
+              Revoke this passport?
+            </p>
             <p className="mt-2 text-body text-slate">
-              {revokeTarget.userName} loses access to {revokeTarget.patientName} immediately. This
+              {revokeTarget.holderName} loses access to {revokeTarget.patientName} immediately. This
               cannot be undone.
             </p>
             <div className="mt-4">
@@ -391,7 +401,9 @@ export default function GrantPassportPage() {
                 className="mt-1 w-full rounded border border-section-line bg-white px-3 py-2 text-body focus:outline-none focus:ring-2 focus:ring-alert-coral/30"
                 placeholder="Clinical purpose ended, patient no longer under this worker's care…"
               />
-              {revokeError ? <p className="mt-1 text-dense text-alert-coral">{revokeError}</p> : null}
+              {revokeError ? (
+                <p className="mt-1 text-dense text-alert-coral">{revokeError}</p>
+              ) : null}
             </div>
             <div className="mt-4 flex gap-3">
               <Button variant="danger" onClick={handleRevoke} loading={revokeSubmitting}>

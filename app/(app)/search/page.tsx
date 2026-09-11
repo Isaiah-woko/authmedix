@@ -42,7 +42,7 @@ export default function SearchPage() {
           <Input
             label="Patient name or code"
             name="query"
-            placeholder="e.g. Marcus Osei or PT-00291-A"
+            placeholder="e.g. Adaeze Okafor or LUTH-PT-10001"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -64,7 +64,9 @@ export default function SearchPage() {
             {results.map((patient) => (
               <li key={patient.id} className="border-b border-section-line last:border-0">
                 <Link
-                  href={ROUTES.patientRecord(patient.id)}
+                  href={`${ROUTES.patientRecord(patient.id)}?name=${encodeURIComponent(
+                    patient.name
+                  )}&code=${encodeURIComponent(patient.patientCode)}`}
                   className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-paper"
                 >
                   <span className="text-body text-ink">{patient.name}</span>

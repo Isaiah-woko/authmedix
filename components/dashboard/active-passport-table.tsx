@@ -22,13 +22,14 @@ function Row({ passport }: { passport: ActivePassportRow }) {
           ? "text-amber-watch"
           : "text-trust-teal";
 
+  const href = `${ROUTES.patientRecord(passport.patientId)}?name=${encodeURIComponent(
+    passport.patientName
+  )}&code=${encodeURIComponent(passport.patientCode)}`;
+
   return (
     <tr className="border-b border-section-line transition-colors last:border-0 hover:bg-paper">
       <td className="px-4 py-3">
-        <Link
-          href={ROUTES.patientRecord(passport.patientId)}
-          className="identifier text-dense text-ink hover:text-deep-indigo"
-        >
+        <Link href={href} className="identifier text-dense text-ink hover:text-deep-indigo">
           {passport.patientCode}
         </Link>
       </td>
