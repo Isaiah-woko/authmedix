@@ -8,7 +8,7 @@ const PUBLIC_PATH_PREFIXES = [
   "/api/auth/csrf",
   "/api/auth/session",
   "/api/auth/signout",
-  "/api/bootstrap", 
+  "/api/bootstrap",
   "/login",
   "/otp",
 ];
