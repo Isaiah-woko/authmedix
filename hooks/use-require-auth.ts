@@ -3,25 +3,21 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/providers/session-provider";
-import { isSessionValid, mustChangePassword } from "@/lib/session";
-import { ROUTES } from "@/lib/routes";
-import type { Session } from "@/types/session";
 
-/** For protected pages: no session → Login; mustChangePassword → Set Password. */
-export function useRequireAuth(): { session: Session | null; isHydrated: boolean } {
-  const { session, isHydrated } = useSession();
+export function useRequireAuth() {
+  const { session, loading } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isHydrated) return;
-    if (!session || !isSessionValid(session)) {
-      router.replace(ROUTES.LOGIN);
+    if (loading) return;
+    if (!session) {
+      router.replace("/login");
       return;
     }
-    if (mustChangePassword(session)) {
-      router.replace(ROUTES.SET_PASSWORD);
+    if (session.user.mustChangePassword && window.location.pathname !== "/set-password") {
+      router.replace("/set-password");
     }
-  }, [isHydrated, session, router]);
+  }, [session, loading, router]);
 
-  return { session, isHydrated };
+  return { session, loading, isHydrated: !loading };
 }

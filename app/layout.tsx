@@ -1,51 +1,31 @@
 import type { Metadata } from "next";
-<<<<<<< HEAD
+import type { ReactNode } from "react";
 import { Inter, IBM_Plex_Mono } from "next/font/google";
-=======
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
->>>>>>> origin/backend
 import "./globals.css";
 import { SessionProvider } from "@/providers/session-provider";
 
-<<<<<<< HEAD
 const inter = Inter({
-  variable: "--font-inter",
   subsets: ["latin"],
+  variable: "--font-inter",
 });
 
 const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex-mono",
-  weight: ["400", "500"],
   subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-plex-mono",
 });
-=======
-
->>>>>>> origin/backend
 
 export const metadata: Metadata = {
   title: "MediTrust",
-  description: "Zero-trust clinical access platform",
+  description: "Zero-trust clinical access platform. Scoped, time-bound, flagged access to patient records.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-<<<<<<< HEAD
-    <html lang="en">
-      <body className={`${inter.variable} ${plexMono.variable} antialiased`}>
+    <html lang="en" className={`${inter.variable} ${plexMono.variable}`}>
+      <body className="bg-paper text-ink antialiased">
         <SessionProvider>{children}</SessionProvider>
       </body>
-=======
-    <html
-      lang="en"
-      className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
->>>>>>> origin/backend
     </html>
   );
 }

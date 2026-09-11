@@ -1,69 +1,76 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { USE_MOCKS } from "@/lib/flags";
 import type { Session } from "@/types/session";
-
-const STORAGE_KEY = "meditrust.mock.session";
 
 interface SessionContextValue {
   session: Session | null;
-  setSession: (s: Session | null) => void;
-  clearSession: () => void;
-  isHydrated: boolean;
+  loading: boolean;
+  refresh: () => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
-const SessionContext = createContext<SessionContextValue>({
-  session: null,
-  setSession: () => {},
-  clearSession: () => {},
-  isHydrated: false,
-});
+const SessionContext = createContext<SessionContextValue | null>(null);
 
+/** Session lives in the HttpOnly cookie. This provider only mirrors it into React state. */
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [session, setSessionState] = useState<Session | null>(null);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // MOCK MODE ONLY: revive session across refreshes.
-    // Real mode will rely on the httpOnly cookie / NextAuth instead.
-    if (USE_MOCKS) {
-      try {
-        const raw = window.sessionStorage.getItem(STORAGE_KEY);
-        if (raw) setSessionState(JSON.parse(raw) as Session);
-      } catch {
-        /* corrupt storage — ignore */
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch("/api/auth/session", { credentials: "same-origin" });
+      if (res.ok) {
+        setSession((await res.json()) as Session);
+      } else {
+        setSession(null);
       }
-    }
-    setIsHydrated(true);
-  }, []);
-
-  const setSession = useCallback((s: Session | null) => {
-    setSessionState(s);
-    if (USE_MOCKS) {
-      if (s) window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-      else window.sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      setSession(null);
     }
   }, []);
 
-  const clearSession = useCallback(() => setSession(null), [setSession]);
+  // Initial load. Every state update lives inside a promise callback,
+  // never synchronously in the effect body, so no cascading renders.
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/auth/session", { credentials: "same-origin" })
+      .then((res) => (res.ok ? res.json() : Promise.resolve(null)))
+      .then((data) => {
+        if (!alive) return;
+        setSession((data ?? null) as Session | null);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!alive) return;
+        setSession(null);
+        setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const signOut = useCallback(async () => {
+    await fetch("/api/auth/signout", { method: "POST", credentials: "same-origin" }).catch(
+      () => undefined
+    );
+    setSession(null);
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.href = "/login";
+  }, []);
 
   const value = useMemo(
-    () => ({ session, setSession, clearSession, isHydrated }),
-    [session, setSession, clearSession, isHydrated]
+    () => ({ session, loading, refresh, signOut }),
+    [session, loading, refresh, signOut]
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
 
 export function useSession() {
-  return useContext(SessionContext);
+  const ctx = useContext(SessionContext);
+  if (!ctx) throw new Error("useSession must be used inside SessionProvider");
+  return ctx;
 }

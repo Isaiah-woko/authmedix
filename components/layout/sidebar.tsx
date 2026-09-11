@@ -31,7 +31,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
 
 /** Persistent role-aware left navigation. Deep indigo shell per the Figma direction. */
 export function Sidebar() {
-  const { session, clearSession } = useSession();
+  const { session, signOut } = useSession();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -83,7 +83,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={() => {
-            clearSession();
+            signOut();
             router.replace(ROUTES.LOGIN);
           }}
           className="mt-3 text-body font-medium text-white/60 transition-colors hover:text-white"
