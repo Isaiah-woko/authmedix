@@ -6,13 +6,14 @@
  * Responsive: menu button appears below md; the "Session ends in" label and
  * role badge collapse away on narrow screens.
  *
- * Logout uses a custom fetch to /api/auth/logout to avoid NextAuth's
- * MissingCSRF errors, followed by a hard redirect to clear React state.
+ * Logout delegates to auth-client's signOut() — centralized so the
+ * navigation-suppression eslint comment lives in exactly one place.
  */
 
 import { Menu } from "lucide-react";
 import { useCountdown } from "@/hooks/use-countdown";
 import { useSession } from "@/hooks/use-session";
+import { signOut } from "@/lib/auth-client";
 import { roleLabel } from "@/lib/role";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -24,14 +25,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { session, user, isLoading } = useSession();
   const countdown = useCountdown(user?.sessionExpiresAt ?? null);
-
-  const handleLogout = async () => {
-    // Call our custom backend route (no CSRF token needed)
-    await fetch("/api/auth/logout", { method: "POST" });
-
-    // Hard redirect to /login to clear all React state and cache
-    window.location.href = "/login";
-  };
 
   if (isLoading || !user || !session) {
     return (
@@ -95,7 +88,7 @@ export function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
           </div>
           <Progress value={percent} tone={tone} className="mt-1" />
         </div>
-        <Button variant="outline" size="sm" onClick={() => void handleLogout()}>
+        <Button variant="outline" size="sm" onClick={() => void signOut()}>
           Sign out
         </Button>
       </div>

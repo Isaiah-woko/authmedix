@@ -5,12 +5,15 @@
  * The backend remains the security boundary: every admin API returns 403 to
  * non-Admins regardless of what the UI shows (HANDOFF §7). Never treat this
  * component as protection.
+ *
+ * Uses router.replace (not redirect) — we're in a client effect, and
+ * redirect() throws an error that nothing would catch here.
  */
 
 import { useEffect, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "@/hooks/use-session";
 import { isClinicalRole } from "@/types";
-import { redirect } from "next/navigation";
 
 export function RoleGate({
   allow,
@@ -19,6 +22,7 @@ export function RoleGate({
   allow: "ADMIN" | "CLINICAL" | "ALL";
   children: ReactNode;
 }) {
+  const router = useRouter();
   const { user, isLoading } = useSession();
 
   const allowed =
@@ -28,9 +32,9 @@ export function RoleGate({
 
   useEffect(() => {
     if (!isLoading && user !== null && !allowed) {
-      redirect("/");
+      router.replace("/");
     }
-  }, [isLoading, user, allowed]);
+  }, [isLoading, user, allowed, router]);
 
   // SessionProvider owns the unauthenticated redirect; here we just hold
   // the chrome back until the role is known (no wrong-role flash).

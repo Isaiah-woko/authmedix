@@ -61,10 +61,11 @@ function safeRedirect(target: string): boolean {
   }
   log = log.filter((t) => now - t < 10_000);
   if (log.length >= 2) return false; // loop detected — stay put
-  log.push(now);
+    log.push(now);
   window.sessionStorage.setItem(REDIRECT_LOG_KEY, JSON.stringify(log));
-  window.location.assign(target);
+  window.location.replace(target); // must not throw — called from setInterval
   return true;
+
 }
 
 export function SessionProvider({ children }: { children: ReactNode }) {

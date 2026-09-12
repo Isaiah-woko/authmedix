@@ -25,21 +25,21 @@ export async function signOut(): Promise<void> {
   try {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
   } catch {
-    // If the network call fails, we still want to clear the UI state
-    // by forcing a hard redirect — the server will reject the cookie anyway.
+    // network failed — the hard redirect below still clears UI state
   }
+  if (typeof window === "undefined") return;
   
-  window.location.href = "/login";
+  window.location.replace("/login"); // hard reload: wipes in-memory session
 }
 
-/** Full-logout redirect (HANDOFF §1: no silent refresh — that's the product). */
 export function redirectToLogin(): void {
   if (typeof window === "undefined") return;
-  window.location.assign("/login");
+
+  window.location.replace("/login");
 }
 
-/** The mustChangePassword gate (HANDOFF §1): only reachable screen while true. */
 export function redirectToSetPassword(): void {
   if (typeof window === "undefined") return;
-  window.location.assign("/set-password");
+
+  window.location.replace("/set-password");
 }
