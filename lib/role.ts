@@ -31,7 +31,7 @@ const ADMIN_NAV: NavSection[] = [
   { label: "Requests queue", href: "/admin/requests" },
   { label: "Passports", href: "/admin/passports" },
   { label: "Staff", href: "/admin/staff" },
-  { label: "Patients", href: "/admin/patients/new" },
+  { label: "Patients", href: "/admin/patients" },
   { label: "Flagged review", href: "/admin/flagged" },
   { label: "Audit log", href: "/admin/audit" },
 ];

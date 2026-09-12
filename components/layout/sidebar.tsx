@@ -3,16 +3,40 @@
 /**
  * Role-aware persistent sidebar (Frontend Brief §6) on the brand Deep Indigo
  * (#2B3A67) — the design system's nav/brand accent. Active item = white left
- * bar + subtle white tint (the inverted form of the light-theme rule);
- * meaning-colors (teal/amber/coral) stay reserved for access states, never nav.
+ * bar + subtle white tint; meaning-colors stay reserved for access states.
+ * Every nav item carries an icon for fast scanning under time pressure.
  */
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  Circle,
+  Flag,
+  HeartPulse,
+  Inbox,
+  KeyRound,
+  LayoutDashboard,
+  ScrollText,
+  Search,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { navSectionsFor, roleLabel } from "@/lib/role";
 import { cn, hospitalCode } from "@/lib/utils";
 import { BrandMark } from "@/components/domain/brand-mark";
+
+/** Presentation-only mapping — nav structure lives in lib/role.ts, icons here. */
+const NAV_ICONS: Record<string, LucideIcon> = {
+  "/": LayoutDashboard,
+  "/search": Search,
+  "/admin/requests": Inbox,
+  "/admin/passports": KeyRound,
+  "/admin/staff": Users,
+  "/admin/patients": HeartPulse,
+  "/admin/flagged": Flag,
+  "/admin/audit": ScrollText,
+};
 
 export function Sidebar({
   onNavigate,
@@ -50,18 +74,20 @@ export function Sidebar({
           const active =
             pathname === section.href ||
             (section.href !== "/" && pathname.startsWith(section.href));
+          const Icon = NAV_ICONS[section.href] ?? Circle;
           return (
             <Link
               key={section.href}
               href={section.href}
               onClick={onNavigate}
               className={cn(
-                "flex items-center border-l-2 px-4 py-2 text-body",
+                "flex items-center gap-3 border-l-2 px-4 py-2 text-body",
                 active
                   ? "border-white bg-white/10 font-medium text-white"
                   : "border-transparent text-white/70 hover:bg-white/10 hover:text-white"
               )}
             >
+              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
               {section.label}
             </Link>
           );
@@ -76,7 +102,7 @@ export function Sidebar({
           Change password
         </Link>
         <p className="mt-2 text-data text-white/60">
-          Zero standing access: every view is granted, scoped, and time-bound.
+          Zero standing access, every view is granted, scoped, and time-bound.
         </p>
       </div>
     </aside>
