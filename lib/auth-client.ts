@@ -1,20 +1,4 @@
-/**
- * Client-side session helpers.
- *
- * The session cookie (`meditrust.session-token`) is HttpOnly — we can never
- * read or parse it in JS (HANDOFF §6). Everything goes through the backend's
- * session endpoints instead.
- *
- * This module deliberately uses raw fetch (not lib/api.ts) for its own two
- * endpoints, for two reasons:
- *  - GET /api/auth/session must be SILENT: a 401 here just means "logged out"
- *    and must never trigger the global logout-redirect loop.
- *  - POST /api/auth/signout must not run through the error dispatcher.
- * It also keeps the dependency one-way (api.ts → auth-client.ts), so no cycles.
- */
-
 import type { Session } from "@/types";
-import { redirect } from 'next/navigation'
 
 /** GET /api/auth/session — never redirects; returns null when logged out. */
 export async function getSession(): Promise<Session | null> {
@@ -32,27 +16,30 @@ export async function getSession(): Promise<Session | null> {
   }
 }
 
-/** POST /api/auth/signout, then land on /login. */
+/**
+ * Custom sign out that bypasses NextAuth's CSRF-protected signout route.
+ * Calls our custom backend `/api/auth/logout` and hard-redirects to `/login`.
+ * Used by the TopBar button and the SessionProvider's stale-cookie circuit breaker.
+ */
 export async function signOut(): Promise<void> {
   try {
-    await fetch("/api/auth/signout", { method: "POST", credentials: "include" });
-  } finally {
-    redirectToLogin();
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+  } catch {
+    // If the network call fails, we still want to clear the UI state
+    // by forcing a hard redirect — the server will reject the cookie anyway.
   }
+  
+  window.location.href = "/login";
 }
-
-let navigating = false;
 
 /** Full-logout redirect (HANDOFF §1: no silent refresh — that's the product). */
 export function redirectToLogin(): void {
-  if (typeof window === "undefined" || navigating) return;
-  navigating = true;
-  redirect("/login");
+  if (typeof window === "undefined") return;
+  window.location.assign("/login");
 }
 
 /** The mustChangePassword gate (HANDOFF §1): only reachable screen while true. */
 export function redirectToSetPassword(): void {
-  if (typeof window === "undefined" || navigating) return;
-  navigating = true;
-  redirect("/set-password");
+  if (typeof window === "undefined") return;
+  window.location.assign("/set-password");
 }

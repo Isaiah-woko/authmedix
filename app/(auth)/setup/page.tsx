@@ -210,9 +210,9 @@ export default function SetupPage() {
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <p className="text-section font-semibold text-ink">Couldn't check system status</p>
+          <p className="text-section font-semibold text-ink">Couldn&apos;t check system status</p>
           <p className="mt-2 text-body text-slate-ink">
-            The setup status endpoint didn't respond. Check the server and try again.
+            The setup status endpoint didn&apos;t respond. Check the server and try again.
           </p>
           <Button
             variant="outline"

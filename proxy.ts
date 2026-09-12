@@ -3,6 +3,7 @@ import { auth, SESSION_COOKIE_NAME } from "@/lib/auth";
 
 const PUBLIC_PATH_PREFIXES = [
   "/api/auth/login",
+  "/api/auth/logout",
   "/api/auth/verify-code",
   "/api/auth/callback",
   "/api/auth/csrf",
