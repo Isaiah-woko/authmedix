@@ -20,7 +20,7 @@ import type { AdminStats, MyPassport, PassportRequest } from "@/types";
 import { isClinicalRole } from "@/types";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -305,7 +305,7 @@ function QuickLink({
     <Link href={href}>
       <Card className="h-full hover:bg-paper-dim/50">
         <CardContent className="p-4">
-          <CardTitle className="!text-body">{title}</CardTitle>
+          <CardTitle className="text-body">{title}</CardTitle>
           <p className="mt-1 text-data text-slate-ink">{description}</p>
         </CardContent>
       </Card>

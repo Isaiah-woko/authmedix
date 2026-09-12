@@ -34,7 +34,7 @@ export const SessionContext = createContext<SessionContextValue | null>(null);
 
 /** Screens reachable without a session. /set-password is NOT here — it
  *  requires a session (it follows verify-code). */
-const PUBLIC_PATHS = new Set(["/login", "/otp"]);
+const PUBLIC_PATHS = new Set(["/login", "/otp", "/setup"]);
 
 /* ── Fetch dedupe: survives remounts within one page instance ── */
 let sessionFetch: { at: number; promise: Promise<Session | null> } | null = null;

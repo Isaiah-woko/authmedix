@@ -9,6 +9,7 @@ const PUBLIC_PATH_PREFIXES = [
   "/api/auth/session",
   "/api/auth/signout",
   "/api/bootstrap",
+  "/setup",
   "/api/bootstrap/status",
   "/login",
   "/otp",
