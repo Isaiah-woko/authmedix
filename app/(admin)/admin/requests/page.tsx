@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { EmptyQueueIllustration } from "@/components/domain/empty-illustrations";
 import { api, describeApiError } from "@/lib/api";
 import { formatTimestamp } from "@/lib/utils";
 import type { PassportRequest } from "@/types";
@@ -84,6 +85,7 @@ export default function RequestsQueuePage() {
       ) : requests.length === 0 ? (
         <EmptyState
           title="No pending requests"
+          icon={<EmptyQueueIllustration />}
           body="Nothing is waiting on you right now. New requests from clinical staff appear here."
         />
       ) : (

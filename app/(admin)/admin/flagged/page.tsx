@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { EmptyFlagIllustration } from "@/components/domain/empty-illustrations";
 import { useToast } from "@/hooks/use-toast";
 import { api, describeApiError } from "@/lib/api";
 import { BREAK_GLASS_REASONS } from "@/lib/constants";
@@ -134,6 +135,7 @@ export default function FlaggedReviewPage() {
       ) : sorted.length === 0 ? (
         <EmptyState
           title="No flagged events to review"
+          icon={<EmptyFlagIllustration />}
           body="Every break-glass invocation so far has been reviewed. New ones appear here the moment they happen."
         />
       ) : (

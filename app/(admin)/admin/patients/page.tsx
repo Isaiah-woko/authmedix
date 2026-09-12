@@ -24,6 +24,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyRosterIllustration } from "@/components/domain/empty-illustrations";
 import {
   Table,
   TableBody,
@@ -143,6 +144,7 @@ export default function AdminPatientsPage() {
         ) : (
           <EmptyState
             title="No patients registered yet"
+            icon={<EmptyRosterIllustration />}
             body="Register the first patient to assign their initial care team — that is how most access gets granted."
             action={
               <Link href="/admin/patients/new">

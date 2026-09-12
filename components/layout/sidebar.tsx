@@ -1,8 +1,10 @@
 "use client";
 
 /**
- * Role-aware sidebar (Frontend Brief §6). Rendered twice by AppShell:
- * static on md+, and inside a drawer below md. Active = Deep Indigo left bar.
+ * Role-aware persistent sidebar (Frontend Brief §6) on the brand Deep Indigo
+ * (#2B3A67) — the design system's nav/brand accent. Active item = white left
+ * bar + subtle white tint (the inverted form of the light-theme rule);
+ * meaning-colors (teal/amber/coral) stay reserved for access states, never nav.
  */
 
 import Link from "next/link";
@@ -10,6 +12,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "@/hooks/use-session";
 import { navSectionsFor, roleLabel } from "@/lib/role";
 import { cn, hospitalCode } from "@/lib/utils";
+import { BrandMark } from "@/components/domain/brand-mark";
 
 export function Sidebar({
   onNavigate,
@@ -28,13 +31,16 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "flex w-56 shrink-0 flex-col border-r border-line bg-white",
+        "flex w-56 shrink-0 flex-col border-r border-deep-indigo-dark bg-deep-indigo",
         className
       )}
     >
-      <div className="border-b border-line px-4 py-4">
-        <p className="text-section-lg font-semibold text-deep-indigo">MediTrust</p>
-        <p className="mt-0.5 text-data text-slate-ink">
+      <div className="border-b border-white/10 px-4 py-4">
+        <div className="flex items-center gap-2">
+          <BrandMark className="h-6 w-6" />
+          <p className="text-section-lg font-semibold text-white">MediTrust</p>
+        </div>
+        <p className="mt-0.5 text-data text-white/60">
           {roleLabel(user.role)} · {hospitalCode(user.healthId)}
         </p>
       </div>
@@ -52,8 +58,8 @@ export function Sidebar({
               className={cn(
                 "flex items-center border-l-2 px-4 py-2 text-body",
                 active
-                  ? "border-deep-indigo bg-deep-indigo-soft font-medium text-ink"
-                  : "border-transparent text-slate-ink hover:bg-paper-dim hover:text-ink"
+                  ? "border-white bg-white/10 font-medium text-white"
+                  : "border-transparent text-white/70 hover:bg-white/10 hover:text-white"
               )}
             >
               {section.label}
@@ -62,9 +68,15 @@ export function Sidebar({
         })}
       </nav>
 
-      <div className="hidden border-t border-line px-4 py-3 md:block">
-        <p className="text-data text-slate-ink">
-          Zero standing access — every view is granted, scoped, and time-bound.
+      <div className="hidden border-t border-white/10 px-4 py-3 md:block">
+        <Link
+          href="/settings/change-password"
+          className="text-data font-medium text-white underline-offset-2 hover:underline"
+        >
+          Change password
+        </Link>
+        <p className="mt-2 text-data text-white/60">
+          Zero standing access: every view is granted, scoped, and time-bound.
         </p>
       </div>
     </aside>

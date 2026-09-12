@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { EmptySearchIllustration } from "@/components/domain/empty-illustrations";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { useDebouncedValue } from "@/hooks/use-debounce";
@@ -77,13 +78,17 @@ export default function SearchPage() {
       <div className="relative mb-6 max-w-xl">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-ink-soft" />
         <Input
+          id="patient-search-input"
           type="search"
           placeholder="Patient name or code…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="pl-9"
           autoFocus
+
+
         />
+
       </div>
 
       {/* ── Results ── */}
@@ -101,6 +106,7 @@ export default function SearchPage() {
       ) : results.length === 0 ? (
         <EmptyState
           title="No patients found"
+          icon={<EmptySearchIllustration />}
           body={`No patients match "${debouncedQuery}". Check the spelling or try a patient code.`}
         />
       ) : (

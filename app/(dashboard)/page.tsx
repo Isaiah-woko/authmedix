@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PassportPanel } from "@/components/domain/passport-panel";
+import { EmptyPassportsIllustration } from "@/components/domain/empty-illustrations";
 
 export default function DashboardPage() {
   const { user } = useSession();
@@ -114,6 +115,7 @@ function ClinicalDashboard() {
         ) : passports.length === 0 ? (
           <EmptyState
             title="No patients currently assigned to you"
+            icon={<EmptyPassportsIllustration />}
             body="Use Search to find a patient and request access, or wait for an admin to assign you via care-team."
             action={
               <Link href="/search">
