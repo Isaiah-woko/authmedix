@@ -36,6 +36,24 @@ export async function writeAuditLog(input: {
   reason?: string | null;
   flagged?: boolean;
 }) {
+  // Defense-in-depth: a dangling patientId must never crash the audit write (FK P2003).
+  // Log the event anyway, without the FK, and preserve the attempted id for forensics.
+  let patientId: string | null = input.patientId ?? null;
+  let reason = input.reason ?? null;
+
+  if (patientId) {
+    const exists = await prisma.patient.findUnique({
+      where: { id: patientId },
+      select: { id: true },
+    });
+    if (!exists) {
+      reason = reason
+        ? `${reason} | unknown patientId ${patientId}`
+        : `unknown patientId ${patientId}`;
+      patientId = null;
+    }
+  }
+
   // Link to the previous entry. (Demo-grade: low write concurrency. In production,
   // serialize writes via a queue/lock to avoid two entries grabbing the same prevHash.)
   const last = await prisma.auditLog.findFirst({
@@ -45,13 +63,14 @@ export async function writeAuditLog(input: {
   const prevHash = last?.entryHash ?? GENESIS_HASH;
   const createdAt = new Date();
 
+  // Compute hash using the SANITIZED values so the chain matches the DB exactly
   const entryHash = computeEntryHash({
     prevHash,
     userId: input.userId ?? null,
-    patientId: input.patientId ?? null,
+    patientId,
     action: input.action,
     outcome: input.outcome,
-    reason: input.reason ?? null,
+    reason,
     flagged: input.flagged ?? false,
     createdAt,
   });
@@ -59,10 +78,10 @@ export async function writeAuditLog(input: {
   return prisma.auditLog.create({
     data: {
       userId: input.userId ?? null,
-      patientId: input.patientId ?? null,
+      patientId,
       action: input.action,
       outcome: input.outcome,
-      reason: input.reason ?? null,
+      reason,
       flagged: input.flagged ?? false,
       prevHash,
       entryHash,

@@ -376,6 +376,8 @@ export function describeApiError(failure: {
         return "One of the care-team entries is invalid.";
       case API_ERROR_CODES.PASSWORD_CHANGE_REQUIRED:
         return "Set a new password to continue.";
+      case "ROLE_DENIED":
+        return "Your passport for this patient doesn't cover this record type.";
       default:
         return "Something went wrong. Try again.";
     }

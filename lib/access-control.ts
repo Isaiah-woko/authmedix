@@ -32,6 +32,7 @@ export interface AccessResult {
   denyReason?: DenyReason;
   visibility?: RoleFieldVisibility;
   passport?: AccessPassport;
+  patientMissing?: boolean
 }
 
 // ── requireAuth: session + live DB status check ──
@@ -155,6 +156,22 @@ export async function checkAccess(input: {
   // 1. SEARCH is always allowed, identity-only — short-circuit, no audit.
   if (action === "SEARCH") {
     return { allowed: true };
+  }
+
+    // 1.5. Ghost patient check (prevents P2003 FK crash and allows 404 routing)
+  const patientExists = await prisma.patient.findUnique({
+    where: { id: patientId },
+    select: { id: true },
+  });
+  if (!patientExists) {
+    await writeAuditLog({
+      userId,
+      patientId, 
+      action,
+      outcome: "DENIED",
+      reason: "UNKNOWN_PATIENT",
+    });
+    return { allowed: false, denyReason: "NO_PASSPORT", patientMissing: true };
   }
 
   // 2. Passport lookup.

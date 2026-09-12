@@ -20,8 +20,14 @@ export async function GET(
   });
 
   if (!access.allowed) {
+    if (access.patientMissing) {
+      return NextResponse.json({ error: "patient_not_found" }, { status: 404 });
+    }
+    // Otherwise, return the standard 403 with the deny reason
     return NextResponse.json({ reason: access.denyReason }, { status: 403 });
   }
+
+
 
   const patient = await prisma.patient.findUnique({
     where: { id: patientId },
@@ -47,6 +53,8 @@ export async function GET(
   if (!patient) {
     return NextResponse.json({ error: "patient_not_found" }, { status: 404 });
   }
+
+
 
   // Filter records based on visibility map returned by checkAccess
   const visibility = access.visibility!;
