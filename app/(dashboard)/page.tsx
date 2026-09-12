@@ -244,7 +244,11 @@ function AdminDashboard() {
         <QuickLink href="/admin/requests" title="Requests queue" description="Approve or deny pending access requests." />
         <QuickLink href="/admin/passports" title="Active passports" description="View and revoke currently active passports." />
         <QuickLink href="/admin/staff" title="Staff management" description="Add, suspend, or unlock staff accounts." />
-        <QuickLink href="/admin/patients/new" title="Register patient" description="Register a new patient and assign care team." />
+        <QuickLink
+        href="/admin/patients"
+        title="Patients"
+        description="Directory of registered patients: Open a record state or register a new patient with care team."
+        />
         <QuickLink href="/admin/flagged" title="Flagged review" description="Review break-glass events requiring attention." />
         <QuickLink href="/admin/audit" title="Audit log" description="Filterable log of all system activity." />
       </div>
