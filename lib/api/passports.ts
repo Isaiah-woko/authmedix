@@ -30,7 +30,7 @@ interface RawPassport {
   patientName?: string;
   userName?: string;
   userHealthId?: string;
-  patient?: { id?: string; code?: string; name?: string } | null;
+  patient?: { id?: string; code?: string; patientCode?: string; name?: string } | null;
   user?: { name?: string; healthId?: string } | null;
 }
 
@@ -46,7 +46,7 @@ function normalizePassport(raw: RawPassport): ActivePassportRow {
     renewalCount: raw.renewalCount ?? 0,
     patientId: raw.patient?.id ?? raw.patientId ?? "",
     patientName: raw.patient?.name ?? raw.patientName ?? "",
-    patientCode: raw.patient?.code ?? raw.patientCode ?? "",
+    patientCode: raw.patient?.patientCode ?? raw.patient?.code ?? raw.patientCode ?? "",
     holderName: raw.user?.name ?? raw.userName,
     holderHealthId: raw.user?.healthId ?? raw.userHealthId,
   };

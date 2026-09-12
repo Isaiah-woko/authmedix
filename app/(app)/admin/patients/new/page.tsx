@@ -12,6 +12,12 @@ import { formatRole } from "@/lib/format";
 
 type Duration = "8H" | "24H";
 
+/** Default field scope per role, mirroring the role-to-field visibility map. */
+function roleScope(role: StaffRow["role"]): string[] {
+  if (role === "LAB") return ["LABS"];
+  return ["NOTES", "LABS", "PRESCRIPTIONS", "UPLOADS", "ALLERGIES"];
+}
+
 export default function RegisterPatientPage() {
   const [staff, setStaff] = useState<StaffRow[]>([]);
   const [name, setName] = useState("");
@@ -29,14 +35,16 @@ export default function RegisterPatientPage() {
       .catch(() => setStaff([]));
   }, []);
 
-  function toggleMember(healthId: string) {
-    setCareTeam((prev) =>
-      prev.includes(healthId) ? prev.filter((h) => h !== healthId) : [...prev, healthId]
-    );
+  function toggleMember(id: string) {
+    setCareTeam((prev) => (prev.includes(id) ? prev.filter((h) => h !== id) : [...prev, id]));
   }
 
-  function nameOf(healthId: string): string {
-    return staff.find((s) => s.healthId === healthId)?.name ?? healthId;
+  function nameOf(id: string): string {
+    return staff.find((s) => s.id === id)?.name ?? id;
+  }
+
+  function roleOf(id: string): StaffRow["role"] {
+    return staff.find((s) => s.id === id)?.role ?? "DOCTOR";
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -56,19 +64,28 @@ export default function RegisterPatientPage() {
         .split(",")
         .map((a) => a.trim())
         .filter((a) => a.length > 0);
-      const res = await api.post<{ id: string; patientCode: string; grantedTo?: string[] }>(
-        "/patients",
-        { name: name.trim(), dob, allergies: allergyList, careTeam, duration }
-      );
-      setResult({ patientCode: res.patientCode, grantedTo: res.grantedTo ?? [] });
+      const careTeamPayload = careTeam.map((id) => ({
+        userId: id,
+        purpose: "Assigned care team member",
+        scope: roleScope(roleOf(id)),
+        duration,
+      }));
+      const res = await api.post<{ id: string; patientCode: string }>("/patients", {
+        name: name.trim(),
+        dob,
+        allergies: allergyList,
+        careTeam: careTeamPayload,
+      });
+      setResult({ patientCode: res.patientCode, grantedTo: careTeam.map(nameOf) });
       setName("");
       setDob("");
       setAllergies("");
       setCareTeam([]);
       setDuration("8H");
     } catch (err) {
-      const e = err as { message?: string };
-      setError(e.message ?? "Could not register the patient.");
+      const e = err as { message?: string; detail?: string };
+      const base = e.message ?? "Could not register the patient.";
+      setError(e.detail ? `${base} Server said: ${e.detail.slice(0, 500)}` : base);
     } finally {
       setSubmitting(false);
     }
@@ -78,7 +95,7 @@ export default function RegisterPatientPage() {
     <>
       <PageHeader
         title="Register Patient"
-        subtitle="Create a patient record and assign the care team. This is the primary way access gets granted."
+        subtitle="Create the patient record and assign the initial care team in one act. This is the primary way access gets granted."
       />
       {error && (
         <div className="mb-4 max-w-2xl">
@@ -92,11 +109,11 @@ export default function RegisterPatientPage() {
           <p className="identifier mt-2 text-body-lg text-ink">{result.patientCode}</p>
           {result.grantedTo.length > 0 ? (
             <p className="mt-2 text-dense text-slate">
-              Initial passports granted to: {result.grantedTo.map(nameOf).join(", ")}
+              Initial passports granted to: {result.grantedTo.join(", ")}
             </p>
           ) : (
             <p className="mt-2 text-dense text-slate">
-              No care team assigned yet. Access must be requested or granted later.
+              No care team assigned. Access must be requested or granted later.
             </p>
           )}
         </section>
@@ -104,14 +121,7 @@ export default function RegisterPatientPage() {
 
       <form onSubmit={handleSubmit} className="flex max-w-2xl flex-col gap-5">
         <Input label="Full name" name="name" value={name} onChange={(e) => setName(e.target.value)} required />
-        <Input
-          label="Date of birth"
-          name="dob"
-          type="date"
-          value={dob}
-          onChange={(e) => setDob(e.target.value)}
-          required
-        />
+        <Input label="Date of birth" name="dob" type="date" value={dob} onChange={(e) => setDob(e.target.value)} required />
         <Input
           label="Allergies (comma separated, optional)"
           name="allergies"
@@ -121,23 +131,21 @@ export default function RegisterPatientPage() {
         />
 
         <fieldset>
-          <legend className="text-body font-medium text-ink">Care team</legend>
+          <legend className="text-body font-medium text-ink">Initial care team</legend>
           <p className="mt-1 text-dense text-slate">
-            Each selected worker receives an initial Standard passport for the duration below.
+            Each selected worker receives a Standard passport for the duration below, created in the
+            same submission, scoped to what their role may see.
           </p>
           <div className="mt-2 flex flex-col gap-2">
             {staff.length === 0 ? (
               <p className="text-dense text-slate">No active clinical workers available.</p>
             ) : (
               staff.map((member) => (
-                <label
-                  key={member.id}
-                  className="flex cursor-pointer items-center gap-2 text-body text-ink"
-                >
+                <label key={member.id} className="flex cursor-pointer items-center gap-2 text-body text-ink">
                   <input
                     type="checkbox"
-                    checked={careTeam.includes(member.healthId)}
-                    onChange={() => toggleMember(member.healthId)}
+                    checked={careTeam.includes(member.id)}
+                    onChange={() => toggleMember(member.id)}
                     className="h-4 w-4 rounded border-section-line"
                   />
                   {member.name} · {formatRole(member.role)}{" "}
@@ -170,7 +178,7 @@ export default function RegisterPatientPage() {
 
         <div>
           <Button type="submit" loading={submitting}>
-            Register patient
+            Register patient and grant care-team access
           </Button>
         </div>
       </form>

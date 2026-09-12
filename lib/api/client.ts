@@ -1,9 +1,10 @@
 /** The single error type thrown by every API call in this app. */
 export class ApiClientError extends Error {
-    status: number;
+  status: number;
   reason?: string;
   locked?: boolean;
   patient?: { id: string; name: string; patientCode: string };
+  detail?: string;
   constructor(message: string, status: number, reason?: string, locked?: boolean) {
     super(message);
     this.name = "ApiClientError";
@@ -52,15 +53,6 @@ function humanize(body: ErrorBody | null, status: number): string {
   return body?.message ?? `Request failed (${status}).`;
 }
 
-async function readErrorBody(response: Response): Promise<ErrorBody | null> {
-  try {
-    const text = await response.text();
-    return text ? (JSON.parse(text) as ErrorBody) : null;
-  } catch {
-    return null;
-  }
-}
-
 async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body } = options;
   let response: Response;
@@ -75,8 +67,17 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
     throw new ApiClientError("Network error. Check your connection and try again.", 0);
   }
 
+  const rawText = await response.text();
+  let errBody: ErrorBody | null = null;
+  if (rawText) {
+    try {
+      errBody = JSON.parse(rawText) as ErrorBody;
+    } catch {
+      errBody = null;
+    }
+  }
+
   if (response.status === 401) {
-    const errBody = await readErrorBody(response);
     const key = errBody?.error ?? "unauthorized";
     if (key === "unauthorized" || key === "session_expired") {
       if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
@@ -84,11 +85,12 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
         window.location.href = "/login";
       }
     }
-    throw new ApiClientError(humanize(errBody, 401), 401, key);
+    const err = new ApiClientError(humanize(errBody, 401), 401, key);
+    err.detail = rawText || undefined;
+    throw err;
   }
 
   if (response.status === 403) {
-    const errBody = await readErrorBody(response);
     const key = errBody?.error ?? "forbidden";
     if (key === "password_change_required") {
       if (typeof window !== "undefined" && !window.location.pathname.startsWith("/set-password")) {
@@ -96,25 +98,25 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
         window.location.href = "/set-password";
       }
     }
-        const forbiddenError = new ApiClientError(humanize(errBody, 403), 403, errBody?.reason ?? key);
-    forbiddenError.patient = errBody?.patient;
-    throw forbiddenError;
+    const err = new ApiClientError(humanize(errBody, 403), 403, errBody?.reason ?? key);
+    err.patient = errBody?.patient;
+    err.detail = rawText || undefined;
+    throw err;
   }
 
   if (!response.ok) {
-    const errBody = await readErrorBody(response);
-    const locked = response.status === 423;
-    throw new ApiClientError(
+    const err = new ApiClientError(
       humanize(errBody, response.status),
       response.status,
       errBody?.error,
-      locked
+      response.status === 423
     );
+    err.detail = rawText || undefined;
+    throw err;
   }
 
-  const text = await response.text();
-  if (!text) return undefined as T;
-  return JSON.parse(text) as T;
+  if (!rawText) return undefined as T;
+  return JSON.parse(rawText) as T;
 }
 
 export const api = {
