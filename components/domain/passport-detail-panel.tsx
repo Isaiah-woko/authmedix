@@ -67,7 +67,7 @@ export function PassportDetailPanel({
           <>
             <Badge tone="coral">Emergency Summary scope</Badge>
             <p className="text-data text-slate-ink">
-              Not renewable — invoke Break-Glass again only if a new emergency requires it.
+              Not renewable. Invoke Break-Glass again only if a new emergency requires it.
             </p>
           </>
         ) : null}

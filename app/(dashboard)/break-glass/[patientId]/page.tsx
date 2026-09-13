@@ -56,7 +56,7 @@ export default function BreakGlassPage() {
     return (
       <EmptyState
         title="Clinical roles only"
-        body="Break-Glass is a clinical emergency mechanism. Admin accounts cannot invoke it — and every attempt is audited."
+        body="Break-Glass is a clinical emergency mechanism. Admin accounts cannot invoke it, and every attempt is audited."
         action={
           <Link href="/">
             <Button variant="outline" size="sm">Back to dashboard</Button>
@@ -70,7 +70,7 @@ export default function BreakGlassPage() {
     return (
       <EmptyState
         title="You already have active access"
-        body="Break-Glass is for immediate emergencies without authorization. Your passport for this patient is valid — use the record view."
+        body="Break-Glass is for immediate emergencies without authorization. Your passport for this patient is valid Use the record view."
         action={
           <Link href={`/patients/${patientId}`}>
             <Button variant="primary" size="sm">Open record</Button>
@@ -163,12 +163,12 @@ function BreakGlassWizard({
         ]}
       />
 
-      {/* What this is — impossible to misread */}
+      {/* What this is, impossible to misread */}
       <div className="mb-6 flex items-start gap-3 rounded-sm border border-alert-coral/40 border-l-4 border-l-alert-coral bg-alert-coral-soft p-4">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-alert-coral" aria-hidden="true" />
         <div>
           <p className="text-body font-medium text-alert-coral">
-            Break-Glass emergency access — {patientName}
+            Break-Glass emergency access: {patientName}
           </p>
           <p className="mt-1 text-data text-slate-ink">
             Grants immediate 2-hour access to the full Emergency Summary (all record
@@ -194,15 +194,15 @@ function BreakGlassWizard({
               </p>
               <p className="text-data text-slate-ink">
                 Answering Yes grants 2-hour emergency access and files a flagged audit
-                event. Answering No returns you to the patient — nothing is invoked,
+                event. Answering No returns you to the patient, nothing is invoked,
                 nothing is logged.
               </p>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Button variant="danger" onClick={() => setStep(2)}>
-                  Yes — immediate clinical emergency
+                  Yes: immediate clinical emergency
                 </Button>
                 <Button variant="outline" onClick={() => router.push(`/patients/${patientId}`)}>
-                  No — go back
+                  No: go back
                 </Button>
               </div>
             </div>
@@ -227,7 +227,7 @@ function BreakGlassWizard({
                     </option>
                   ))}
                 </Select>
-                <FieldHint>Fixed clinical protocol list — free text is not accepted.</FieldHint>
+                <FieldHint>Fixed clinical protocol list. Free text is not accepted.</FieldHint>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
                 <Button variant="ghost" onClick={() => setStep(1)}>
@@ -264,7 +264,7 @@ function BreakGlassWizard({
                   invalid={reasonDetail.length > 0 && !isValidReasonDetail(reasonDetail)}
                 />
                 <FieldHint>
-                  Required for every category — minimum 10 characters. Currently{" "}
+                  Required for every category. Minimum 10 characters. Currently{" "}
                   <span className="mono">{reasonDetail.trim().length}</span>.
                 </FieldHint>
               </div>

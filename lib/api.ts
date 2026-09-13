@@ -119,13 +119,12 @@ export async function request<TSuccess>(
   try {
     res = await fetch(path, {
       method,
-      credentials: "include", // explicit even though same-origin (HANDOFF §6)
+      credentials: "include",
       headers: body !== undefined ? { "Content-Type": "application/json" } : undefined,
       body: body !== undefined ? JSON.stringify(body) : undefined,
       cache: "no-store",
     });
   } catch {
-    // Network down — there is no HTTP status at all.
     return { ok: false, status: 0, body: null };
   }
 
@@ -136,13 +135,20 @@ export async function request<TSuccess>(
   }
 
   const errorBody = (parsed ?? null) as ApiErrorBody | null;
-  if (!options.silent) {
+
+  // Exclude auth endpoints from global 401 redirects.
+  // A 401 on login/verify means "wrong credentials", not "session expired".
+  const isAuthEndpoint =
+    path.includes("/api/auth/login") ||
+    path.includes("/api/auth/verify-code");
+
+  if (!options.silent && !isAuthEndpoint) {
     handleGlobalSideEffects(res.status, errorBody);
   }
+
   return { ok: false, status: res.status, body: errorBody };
 }
-
-/* ── Typed endpoint client — mirrors HANDOFF §3 exactly ─────────────── */
+/* Typed endpoint client */
 
 export const api = {
   auth: {

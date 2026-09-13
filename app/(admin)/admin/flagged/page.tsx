@@ -103,7 +103,7 @@ export default function FlaggedReviewPage() {
     }
     if (result.status === 404) {
       // Another admin reviewed it first — replay is impossible by design.
-      setReviewError("This event was already reviewed — the queue has been refreshed.");
+      setReviewError("This event was already reviewed, the queue has been refreshed.");
       reload();
       return;
     }
@@ -214,7 +214,7 @@ export default function FlaggedReviewPage() {
             {reviewTarget.highPriority ? (
               <div className="flex flex-wrap items-center gap-2">
                 <FlaggedPriorityTag />
-                <FieldHint>Repeat break-glass use by this worker — a rising risk signal.</FieldHint>
+                <FieldHint>Repeat break-glass use by this worker, a rising risk signal.</FieldHint>
               </div>
             ) : null}
 

@@ -53,9 +53,9 @@ export function Sidebar({
   const sections = navSectionsFor(user.role);
 
   return (
-    <aside
+        <aside
       className={cn(
-        "flex w-56 shrink-0 flex-col border-r border-deep-indigo-dark bg-deep-indigo",
+        "flex w-56 shrink-0 flex-col h-screen overflow-y-auto border-r border-deep-indigo-dark bg-deep-indigo",
         className
       )}
     >

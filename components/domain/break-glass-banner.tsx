@@ -18,7 +18,7 @@ export function BreakGlassBanner({ expiresAt }: { expiresAt: string }) {
       <div className="flex items-start gap-2 sm:items-center">
         <AlertTriangle className="h-4 w-4 shrink-0 text-alert-coral" aria-hidden="true" />
         <p className="text-body font-medium text-alert-coral">
-          Emergency access active — fixed Emergency Summary scope (all record types).
+          Emergency access active. Fixed Emergency Summary scope (all record types).
         </p>
       </div>
       <Countdown target={expiresAt} prefix="Expires in" className="text-body" />

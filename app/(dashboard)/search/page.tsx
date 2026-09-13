@@ -71,7 +71,7 @@ export default function SearchPage() {
     <>
       <PageHeader
         title="Patient search"
-        subtitle="Search by name or patient code. Results show identity only — access is checked when you open a patient."
+        subtitle="Search by name or patient code. Results show identity only. Access is checked when you open a patient."
       />
 
       {/* ── Search bar ── */}

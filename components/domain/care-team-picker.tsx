@@ -70,7 +70,7 @@ export function CareTeamPicker({
     <div className="space-y-3">
       {value.length === 0 ? (
         <FieldHint>
-          No care team assigned yet — without one, workers must request access or use
+          No care team assigned yet. Without one, workers must request access or use
           break-glass for this patient.
         </FieldHint>
       ) : null}
@@ -97,7 +97,7 @@ export function CareTeamPicker({
                     .filter((m) => !takenIds.includes(m.id) || m.id === entry.userId)
                     .map((member) => (
                       <option key={member.id} value={member.id}>
-                        {member.name} — {member.healthId} ({roleLabel(member.role)})
+                        {member.name} : {member.healthId} ({roleLabel(member.role)})
                       </option>
                     ))}
                 </Select>

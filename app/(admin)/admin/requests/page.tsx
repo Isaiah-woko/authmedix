@@ -63,7 +63,7 @@ export default function RequestsQueuePage() {
     <>
       <PageHeader
         title="Requests queue"
-        subtitle="Pending access requests from clinical staff — approve or deny each one."
+        subtitle="Pending access requests from clinical staff. Approve or deny each one."
       />
 
       {isLoading ? (

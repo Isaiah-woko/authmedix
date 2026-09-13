@@ -76,7 +76,7 @@ export default function ChangePasswordPage() {
         <CardContent>
           {done ? (
             <p className="mb-4 text-body font-medium text-trust-teal">
-              Password updated — it applies from your next sign-in.
+              Password updated. It applies from your next sign-in.
             </p>
           ) : null}
           <form

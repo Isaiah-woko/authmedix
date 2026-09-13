@@ -77,7 +77,7 @@ export default function SetPasswordPage() {
         <p className="text-section-lg font-semibold text-deep-indigo">MediTrust</p>
         <CardTitle className="mt-2">Set your password</CardTitle>
         <CardDescription>
-          Your admin issued a temporary password. Choose your own to continue — this is
+          Your admin issued a temporary password. Choose your own to continue. This is
           the only screen reachable until you do.
         </CardDescription>
       </CardHeader>

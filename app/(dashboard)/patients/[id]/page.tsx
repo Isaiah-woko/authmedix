@@ -193,7 +193,7 @@ export default function PatientRecordPage() {
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-section font-semibold text-ink">Records</h2>
             {isBreakGlass ? (
-              <Badge tone="coral">Emergency Summary — full scope</Badge>
+              <Badge tone="coral">Emergency Summary. Full scope</Badge>
             ) : (
               <span className="text-data text-slate-ink">
                 {patient.records.length} shown for your role

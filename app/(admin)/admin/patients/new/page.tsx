@@ -158,7 +158,7 @@ export default function RegisterPatientPage() {
     <>
       <PageHeader
         title="Register patient"
-        subtitle="Hospital front-desk intake. Assigning the care team here grants their access immediately — most workers never need to request it."
+        subtitle="Hospital front-desk intake. Assigning the care team here grants their access immediately. Most workers never need to request it."
       />
 
       <div className="max-w-3xl space-y-6">
@@ -215,7 +215,7 @@ export default function RegisterPatientPage() {
             <CardTitle>Initial care team</CardTitle>
             <CardDescription>
               Each member receives a STANDARD passport the moment this patient is
-              registered — purpose and scope pre-fill from their role, editable per row.
+              registered; purpose and scope pre-fill from their role, editable per row.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

@@ -194,7 +194,7 @@ export default function SetupPage() {
         const fields = extractFieldErrors(body?.details);
         setFieldErrors(fields);
         if (Object.keys(fields).length === 0) {
-          setFormError("Check the form — some values were rejected.");
+          setFormError("Check the form. Some values were rejected.");
         }
       } else {
         setFormError("Something went wrong. Try again.");
@@ -286,7 +286,7 @@ export default function SetupPage() {
             {copied ? "Copied" : "Copy Health ID"}
           </Button>
           <p className="text-data font-medium text-amber-watch">
-            Save this Health ID now — it is shown only once.
+            Save this Health ID now. It is shown only once.
           </p>
           <p className="text-data text-slate-ink">
             Log in with this Health ID, your email, and the password you just set. A
@@ -307,7 +307,7 @@ export default function SetupPage() {
         <p className="text-section-lg font-semibold text-deep-indigo">MediTrust</p>
         <CardTitle className="mt-2">System setup</CardTitle>
         <CardDescription>
-          First run only — creates the first hospital and its admin account. This
+          First run only, creates the first hospital and its admin account. This
           endpoint disables itself afterwards.
         </CardDescription>
       </CardHeader>

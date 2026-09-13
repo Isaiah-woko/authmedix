@@ -105,7 +105,7 @@ export default function RequestDetailPage() {
     if (outcome.result.ok) {
       toast({
         title: "Request approved",
-        description: `Standard passport created — ${duration === "8H" ? "8 hours" : "24 hours"}.`,
+        description: `Standard passport created. ${duration === "8H" ? "8 hours" : "24 hours"}.`,
         tone: "success",
       });
       router.push("/admin/requests");
@@ -155,7 +155,7 @@ export default function RequestDetailPage() {
     return (
       <EmptyState
         title="Already reviewed"
-        body="This request is no longer pending — it was approved or denied, possibly by another admin. Reviews cannot be replayed."
+        body="This request is no longer pending. It was approved or denied, possibly by another admin. Reviews cannot be replayed."
         action={
           <Link href="/admin/requests">
             <Button variant="outline" size="sm">Back to queue</Button>
@@ -240,7 +240,7 @@ export default function RequestDetailPage() {
             <fieldset>
               <legend className="text-body font-medium text-ink">Scope</legend>
               <p className="mt-0.5 text-data text-slate-ink">
-                Pre-filled from the request — edit if the approval should be narrower.
+                Pre-filled from the request. Edit if the approval should be narrower.
               </p>
               <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {RECORD_TYPE_ORDER.map((type) => (
@@ -278,7 +278,7 @@ export default function RequestDetailPage() {
           <CardHeader>
             <CardTitle className="text-body">Deny</CardTitle>
             <CardDescription>
-              A reason is mandatory — it is recorded and visible to the requester.
+              A reason is mandatory. It is recorded and visible to the requester.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

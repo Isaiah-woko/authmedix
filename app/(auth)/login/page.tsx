@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api, describeApiError } from "@/lib/api";
+import { api } from "@/lib/api";
 import { clearPendingLogin, setPendingLogin } from "@/lib/pending-login";
 import { zodFieldErrors } from "@/lib/utils";
 import { isLockedBody, loginSchema } from "@/types";
@@ -52,35 +52,63 @@ export default function LoginPage() {
     setValues((v) => ({ ...v, [name]: value }));
   }
 
-  async function onSubmit() {
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    // CRITICAL: Prevent default form submission immediately
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Prevent double-submits
+    if (submitting) return;
+
     setFormError(null);
     setFieldErrors({});
-
-    const parsed = loginSchema.safeParse(values);
-    if (!parsed.success) {
-      setFieldErrors(zodFieldErrors(parsed.error));
-      return;
-    }
-
+    setLocked(false);
     setSubmitting(true);
-    const result = await api.auth.login(parsed.data);
-    setSubmitting(false);
 
-    if (result.ok) {
-      setPendingLogin({ ...parsed.data, sentAt: Date.now() });
-      router.push("/otp");
-      return;
+    try {
+      const parsed = loginSchema.safeParse(values);
+      if (!parsed.success) {
+        setFieldErrors(zodFieldErrors(parsed.error));
+        setSubmitting(false);
+        return;
+      }
+
+      const result = await api.auth.login(parsed.data);
+
+      // ONLY navigate if the backend explicitly returned success (200)
+      if (result.ok === true) {
+        setPendingLogin({ ...parsed.data, sentAt: Date.now() });
+        router.push("/otp");
+        return;
+      }
+
+      // Handle specific failure states locally without reloading
+      if (result.status === 403 && isLockedBody(result.body)) {
+        setLocked(true);
+        setSubmitting(false);
+        return;
+      }
+
+      if (result.status === 429) {
+        setFormError("Too many login attempts. Please try again later.");
+        setSubmitting(false);
+        return;
+      }
+
+      // 401 or any other error falls through to the generic message
+      setFormError("Invalid credentials. Please check your Health ID, email, and password.");
+    } catch (error) {
+      // Catch any unexpected errors to prevent the page from crashing/refreshing
+      console.error("Login error:", error);
+      setFormError("An unexpected error occurred. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-    if (isLockedBody(result.body)) {
-      setLocked(true);
-      return;
-    }
-    setFormError(describeApiError(result));
   }
 
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
-            {/* ── Right: the form ── */}
+      {/* ── Right: the form ── */}
       <div className="flex flex-col justify-center px-4 py-10 sm:px-6 lg:order-2 lg:px-12 xl:px-20">
         <div className="mx-auto w-full max-w-md">
           {/* Compact brand header — mobile only; the panel carries it on desktop */}
@@ -115,10 +143,7 @@ export default function LoginPage() {
             </div>
           ) : (
             <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                void onSubmit();
-              }}
+              onSubmit={onSubmit}
               noValidate
               className="mt-8 space-y-4"
             >
@@ -132,6 +157,7 @@ export default function LoginPage() {
                   className="mt-1"
                   value={values.healthId}
                   onChange={(e) => setField("healthId", e.target.value)}
+                  disabled={submitting}
                   invalid={!!fieldErrors.healthId}
                 />
                 <FieldError>{fieldErrors.healthId}</FieldError>
@@ -147,6 +173,7 @@ export default function LoginPage() {
                   className="mt-1"
                   value={values.email}
                   onChange={(e) => setField("email", e.target.value)}
+                  disabled={submitting}
                   invalid={!!fieldErrors.email}
                 />
                 <FieldError>{fieldErrors.email}</FieldError>
@@ -161,6 +188,7 @@ export default function LoginPage() {
                   className="mt-1"
                   value={values.password}
                   onChange={(e) => setField("password", e.target.value)}
+                  disabled={submitting}
                   invalid={!!fieldErrors.password}
                 />
                 <FieldError>{fieldErrors.password}</FieldError>
@@ -172,7 +200,7 @@ export default function LoginPage() {
                 </div>
               ) : null}
 
-              <Button type="submit" loading={submitting} className="w-full">
+              <Button type="submit" loading={submitting} disabled={submitting} className="w-full">
                 Continue
               </Button>
 
@@ -185,7 +213,8 @@ export default function LoginPage() {
           )}
         </div>
       </div>
-            {/* ── Left: what MediTrust is (desktop) ── */}
+
+      {/* ── Left: what MediTrust is (desktop) ── */}
       <aside className="hidden flex-col justify-between bg-deep-indigo p-12 lg:flex lg:order-1 lg:border-r lg:border-white/10 xl:p-16">
         <div className="flex items-center gap-2.5">
           <BrandMark className="h-7 w-7" />

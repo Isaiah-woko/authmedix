@@ -322,7 +322,7 @@ export default function PassportsPage() {
           <CardTitle>Grant passport / referral</CardTitle>
           <CardDescription>
             Direct grant outside the request flow. Referral is push-model: name the
-            receiving worker by Health ID — they never search or request. Consumes a
+            receiving worker by Health ID, they never search or request. Consumes a
             fresh step-up code.
           </CardDescription>
         </CardHeader>
@@ -336,8 +336,8 @@ export default function PassportsPage() {
                 value={grantType}
                 onChange={(e) => setGrantType(e.target.value as "STANDARD" | "REFERRAL")}
               >
-                <option value="STANDARD">Standard — own-hospital worker</option>
-                <option value="REFERRAL">Referral — receiving worker, any hospital</option>
+                <option value="STANDARD">Standard: Own-hospital worker</option>
+                <option value="REFERRAL">Referral: Receiving worker, any hospital</option>
               </Select>
             </div>
             <div>
@@ -357,7 +357,7 @@ export default function PassportsPage() {
                 </Select>
               ) : (
                 <p className="mt-1 rounded-sm border border-line bg-paper-dim px-3 py-2 text-data text-slate-ink">
-                  Referral is fixed at 48 hours — not editable.
+                  Referral is fixed at 48 hours, not editable.
                 </p>
               )}
             </div>
@@ -375,7 +375,7 @@ export default function PassportsPage() {
                 onChange={(e) => setHospitalCode(e.target.value.toUpperCase())}
               />
               <FieldHint>
-                Optional typing aid — the Health ID below must start with this code.
+                Optional typing aid: the Health ID below must start with this code.
                 The server validates the worker exists and is active.
               </FieldHint>
             </div>
@@ -449,7 +449,7 @@ export default function PassportsPage() {
         title="Revoke this passport?"
         description={
           revokeTarget
-            ? `${revokeTarget.user.name} loses access to ${revokeTarget.patient.name} immediately — checkAccess reads live state on their next request.`
+            ? `${revokeTarget.user.name} loses access to ${revokeTarget.patient.name} immediately. CheckAccess reads live state on their next request.`
             : undefined
         }
         footer={

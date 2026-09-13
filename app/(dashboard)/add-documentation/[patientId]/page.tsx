@@ -144,10 +144,10 @@ function DocumentationWorkspace({
 
       <Card className="max-w-3xl">
         <CardHeader>
-          <CardTitle>Add documentation — {patientName}</CardTitle>
+          <CardTitle>Add documentation: {patientName}</CardTitle>
           <CardDescription>
             Type, dictate, or scan. Dictation and OCR drop editable text into the review
-            box below — always review before saving.
+            box below, always review before saving.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -203,7 +203,7 @@ function DocumentationWorkspace({
               invalid={!!fieldErrors.content}
             />
             {mode !== "typed" ? (
-              <FieldHint>Edit freely — nothing is saved until you press Save.</FieldHint>
+              <FieldHint>Edit freely. Nothing is saved until you press Save.</FieldHint>
             ) : null}
             <FieldError>{fieldErrors.content}</FieldError>
           </div>

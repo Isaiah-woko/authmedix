@@ -58,7 +58,7 @@ export default function RequestAccessPage() {
     return (
       <EmptyState
         title="You already have access"
-        body="Your passport for this patient is active — open the record view to work."
+        body="Your passport for this patient is active. Open the record view to work."
         action={
           <Link href={`/patients/${patientId}`}>
             <Button variant="primary" size="sm">Open record</Button>
@@ -177,10 +177,10 @@ function RequestForm({
       <Breadcrumbs items={crumbs} />
       <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle>Request access{patientName ? ` — ${patientName}` : ""}</CardTitle>
+          <CardTitle>Request access{patientName ? ` : ${patientName}` : ""}</CardTitle>
           <CardDescription>
             Most access is assigned at admission via care teams. This request is the
-            fallback for when you need a patient outside your assigned team — an admin
+            fallback for when you need a patient outside your assigned team. An admin
             reviews every request.
           </CardDescription>
         </CardHeader>
@@ -203,7 +203,7 @@ function RequestForm({
                 onChange={(e) => setPurpose(e.target.value)}
                 invalid={!!fieldErrors.purpose}
               />
-              <FieldHint>Pre-filled from your role — edit to match the clinical need.</FieldHint>
+              <FieldHint>Pre-filled from your role. Edit to match the clinical need.</FieldHint>
               <FieldError>{fieldErrors.purpose}</FieldError>
             </div>
 

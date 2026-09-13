@@ -103,7 +103,7 @@ export function DictationRecorder({ onTranscript }: { onTranscript: (text: strin
       setError(
         event.error === "not-allowed"
           ? "Microphone access was denied."
-          : "Dictation error — try again, or type instead."
+          : "Dictation error. Try again, or type instead."
       );
       setListening(false);
     };
@@ -150,7 +150,7 @@ export function DictationRecorder({ onTranscript }: { onTranscript: (text: strin
         ) : null}
 
         <span className="text-data text-slate-ink">
-          {listening ? "Listening — speak clearly…" : "Speech is transcribed locally in your browser."}
+          {listening ? "Listening. Speak clearly…" : "Speech is transcribed locally in your browser."}
         </span>
       </div>
 

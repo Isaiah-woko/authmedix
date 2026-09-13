@@ -147,7 +147,7 @@ export default function AuditLogPage() {
     <>
       <PageHeader
         title="Audit log"
-        subtitle="Every access attempt and admin action — allowed and denied. Hospital-scoped server-side."
+        subtitle="Every access attempt and admin action, allowed and denied. Hospital-scoped server-side."
       />
 
       {/* ── Filter bar ── */}

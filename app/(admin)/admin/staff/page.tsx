@@ -126,7 +126,7 @@ export default function StaffPage() {
     if (result.ok) {
       toast({
         title: "Password force-reset",
-        description: "Live sessions are invalid — they must log in and set a new password.",
+        description: "Live sessions are invalid, they must log in and set a new password.",
         tone: "warning",
       });
       refresh();
@@ -304,7 +304,7 @@ export default function StaffPage() {
           <CardTitle>Add staff member</CardTitle>
           <CardDescription>
             Health ID is generated automatically. The temp password is shown once at
-            creation — the worker must change it on first login. Consumes a step-up code.
+            creation. The worker must change it on first login. Consumes a step-up code.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -368,7 +368,7 @@ export default function StaffPage() {
         open={suspendTarget !== null}
         onClose={() => setSuspendTarget(null)}
         title={`Suspend ${suspendTarget?.name ?? ""}?`}
-        description="This also ends their current patient access — all of their active passports are revoked immediately, and their session dies on the next request."
+        description="This also ends their current patient access, all of their active passports are revoked immediately, and their session dies on the next request."
         footer={
           <>
             <Button variant="ghost" onClick={() => setSuspendTarget(null)}>
@@ -419,7 +419,7 @@ export default function StaffPage() {
       <Modal
         open={created !== null}
         onClose={() => setCreated(null)}
-        title="Account created — copy the temp password now"
+        title="Account created. Copy the temp password now"
         description="It will not be shown again. The worker changes it on first login, after their OTP check."
         footer={
           <Button variant="primary" onClick={() => setCreated(null)}>
