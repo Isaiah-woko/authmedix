@@ -3,12 +3,15 @@ import { auth, SESSION_COOKIE_NAME } from "@/lib/auth";
 
 const PUBLIC_PATH_PREFIXES = [
   "/api/auth/login",
+  "/api/auth/logout",
   "/api/auth/verify-code",
   "/api/auth/callback",
   "/api/auth/csrf",
   "/api/auth/session",
   "/api/auth/signout",
-  "/api/bootstrap", 
+  "/setup",
+  "/api/bootstrap",
+  "/api/bootstrap/status",
   "/login",
   "/otp",
 ];
@@ -63,5 +66,7 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+matcher: [
+  "/((?!_next/static|_next/image|favicon.ico|ocr/.*|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|wasm)$).*)",
+]
 };

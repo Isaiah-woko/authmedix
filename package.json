@@ -31,29 +31,37 @@
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "7.10.0",
     "bcryptjs": "^3.0.3",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
     "geist": "^1.7.2",
+    "lucide-react": "^1.44.0",
     "next": "16.3.4",
     "next-auth": "5.0.0-beta.32",
     "pg": "^8.23.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "tailwind-merge": "^3.6.0",
+    "tesseract.js": "^5.1.1",
     "zod": "^4.5.4"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^20.19.43",
     "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.5.5",
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "postcss": "^8.5.26",
     "prisma": "7.10.0",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
-  "packageManager": "pnpm@11.11.0"
+  "packageManager": "pnpm@12.3.4"
 }

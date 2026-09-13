@@ -39,7 +39,11 @@ export async function POST(req: NextRequest) {
   });
 
   if (!access.allowed) {
-    return NextResponse.json({ error: access.denyReason }, { status: 403 });
+    if (access.patientMissing) {
+      return NextResponse.json({ error: "patient_not_found" }, { status: 404 });
+    }
+    // Otherwise, return the standard 403 with the deny reason
+    return NextResponse.json({ reason: access.denyReason }, { status: 403 });
   }
 
   // 3. Create the record
