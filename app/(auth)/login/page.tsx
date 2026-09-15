@@ -106,112 +106,154 @@ export default function LoginPage() {
     }
   }
 
-  return (
+    return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
       {/* ── Right: the form ── */}
-      <div className="flex flex-col justify-center px-4 py-10 sm:px-6 lg:order-2 lg:px-12 xl:px-20">
-        <div className="mx-auto w-full max-w-md">
-          {/* Compact brand header — mobile only; the panel carries it on desktop */}
-          <div className="mb-8 flex items-center gap-2 lg:hidden">
-            <BrandMark className="h-7 w-7" />
-            <p className="text-section-lg font-semibold text-deep-indigo">MediTrust</p>
-          </div>
-
-          <h1 className="text-title font-semibold text-ink">Sign in</h1>
-          <p className="mt-1 text-body text-slate-ink">
-            Health ID, email, and password, then a one-time code.
-          </p>
-
-          {locked ? (
-            <div className="mt-8 rounded-sm border border-alert-coral/40 border-l-4 border-l-alert-coral bg-alert-coral-soft p-4">
-              <p className="text-section font-semibold text-alert-coral">Account locked</p>
-              <p className="mt-1 text-body text-slate-ink">
-                This account is locked after too many failed attempts. Contact your admin
-                to unlock it.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-4"
-                onClick={() => {
-                  setLocked(false);
-                  setValues((v) => ({ ...v, password: "" }));
-                }}
-              >
-                Try different credentials
-              </Button>
+      <div className="flex flex-col pb-12 lg:order-2 lg:justify-center lg:px-12 lg:py-10 xl:px-20">
+        {/* Brand band — mobile + tablet only */}
+        <div className="relative overflow-hidden bg-deep-indigo px-6 pb-16 pt-10 sm:px-10 sm:pb-20 sm:pt-14 lg:hidden">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-white/[0.07] blur-2xl"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-28 -left-16 h-64 w-64 rounded-full bg-white/[0.05] blur-2xl"
+          />
+          <div className="relative mx-auto w-full max-w-md sm:max-w-xl">
+            <div className="flex items-center gap-2.5">
+              <BrandMark className="h-7 w-7" />
+              <p className="text-section-lg font-bold text-white">MediTrust</p>
             </div>
-          ) : (
-            <form
-              onSubmit={onSubmit}
-              noValidate
-              className="mt-8 space-y-4"
-            >
-              <div>
-                <Label htmlFor="healthId">Health ID</Label>
-                <Input
-                  id="healthId"
-                  mono
-                  placeholder="LUTH-DOC-0001"
-                  autoComplete="username"
-                  className="mt-1"
-                  value={values.healthId}
-                  onChange={(e) => setField("healthId", e.target.value)}
-                  disabled={submitting}
-                  invalid={!!fieldErrors.healthId}
-                />
-                <FieldError>{fieldErrors.healthId}</FieldError>
-              </div>
-
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="doc@luth.gov"
-                  autoComplete="email"
-                  className="mt-1"
-                  value={values.email}
-                  onChange={(e) => setField("email", e.target.value)}
-                  disabled={submitting}
-                  invalid={!!fieldErrors.email}
-                />
-                <FieldError>{fieldErrors.email}</FieldError>
-              </div>
-
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  className="mt-1"
-                  value={values.password}
-                  onChange={(e) => setField("password", e.target.value)}
-                  disabled={submitting}
-                  invalid={!!fieldErrors.password}
-                />
-                <FieldError>{fieldErrors.password}</FieldError>
-              </div>
-
-              {formError ? (
-                <div role="alert">
-                  <FieldError>{formError}</FieldError>
-                </div>
-              ) : null}
-
-              <Button type="submit" loading={submitting} disabled={submitting} className="w-full">
-                Continue
-              </Button>
-
-              {process.env.NODE_ENV === "development" ? (
-                <FieldHint>
-                  Development: your one-time code prints in the pnpm dev server console.
-                </FieldHint>
-              ) : null}
-            </form>
-          )}
+            <h2 className="mt-7 text-section-lg font-semibold leading-snug text-white sm:mt-9 sm:text-title">
+              Nobody has default access to any patient. Ever.
+            </h2>
+            <p className="mt-2.5 text-data leading-relaxed text-white/70 sm:text-body">
+              Zero-trust clinical access for hospital teams. Access exists only when an
+              active, unexpired Access Passport says so.
+            </p>
+          </div>
         </div>
+
+        {/* Form card — floats over the band on small screens, plain column on desktop */}
+        <div className="relative z-10 -mt-10 px-4 sm:-mt-12 sm:px-10 lg:mt-0 lg:px-0">
+          <div className="mx-auto w-full max-w-md rounded-lg border border-black/5 bg-white p-6 shadow-xl shadow-deep-indigo/10 sm:max-w-xl sm:p-8 lg:max-w-md lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+            <h1 className="text-title font-semibold text-ink">Sign in</h1>
+            <p className="mt-1 text-body text-slate-ink">
+              Health ID, email, and password, then a one-time code.
+            </p>
+
+            {locked ? (
+              <div className="mt-8 rounded-sm border border-alert-coral/40 border-l-4 border-l-alert-coral bg-alert-coral-soft p-4">
+                <p className="text-section font-semibold text-alert-coral">Account locked</p>
+                <p className="mt-1 text-body text-slate-ink">
+                  This account is locked after too many failed attempts. Contact your admin
+                  to unlock it.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => {
+                    setLocked(false);
+                    setValues((v) => ({ ...v, password: "" }));
+                  }}
+                >
+                  Try different credentials
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={onSubmit} noValidate className="mt-8 space-y-4">
+                <div>
+                  <Label htmlFor="healthId">Health ID</Label>
+                  <Input
+                    id="healthId"
+                    mono
+                    placeholder="LUTH-DOC-0001"
+                    autoComplete="username"
+                    className="mt-1"
+                    value={values.healthId}
+                    onChange={(e) => setField("healthId", e.target.value)}
+                    disabled={submitting}
+                    invalid={!!fieldErrors.healthId}
+                  />
+                  <FieldError>{fieldErrors.healthId}</FieldError>
+                </div>
+
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="doc@luth.gov"
+                    autoComplete="email"
+                    className="mt-1"
+                    value={values.email}
+                    onChange={(e) => setField("email", e.target.value)}
+                    disabled={submitting}
+                    invalid={!!fieldErrors.email}
+                  />
+                  <FieldError>{fieldErrors.email}</FieldError>
+                </div>
+
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    className="mt-1"
+                    value={values.password}
+                    onChange={(e) => setField("password", e.target.value)}
+                    disabled={submitting}
+                    invalid={!!fieldErrors.password}
+                  />
+                  <FieldError>{fieldErrors.password}</FieldError>
+                </div>
+
+                {formError ? (
+                  <div role="alert">
+                    <FieldError>{formError}</FieldError>
+                  </div>
+                ) : null}
+
+                <Button type="submit" loading={submitting} disabled={submitting} className="w-full">
+                  Continue
+                </Button>
+
+                {process.env.NODE_ENV === "development" ? (
+                  <FieldHint>
+                    Development: your one-time code prints in the pnpm dev server console.
+                  </FieldHint>
+                ) : null}
+              </form>
+            )}
+          </div>
+        </div>
+
+        {/* Principles + audit note — tablet only */}
+        <div className="mt-10 px-10 hidden md:block lg:hidden">
+          <div className="mx-auto w-full max-w-xl">
+            <p className="text-data font-medium uppercase tracking-wider text-slate-ink/60">
+              How access works here
+            </p>
+            <ul className="mt-4 grid gap-5 grid-cols-3">
+              {PRINCIPLES.map((principle) => (
+                <li
+                  key={principle.title}
+                  className="border-t-2 border-deep-indigo/20 pt-3"
+                >
+                  <p className="text-body font-medium text-ink">{principle.title}</p>
+                  <p className="mt-1 text-data leading-relaxed text-slate-ink">{principle.body}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-8 border-t border-black/5 pt-5 text-data text-slate-ink/70">
+              Every access attempt, allowed or denied, is written to a tamper-evident audit log.
+            </p>
+          </div>
+        </div>
+
       </div>
 
       {/* ── Left: what MediTrust is (desktop) ── */}
