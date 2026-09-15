@@ -62,6 +62,13 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^5"
   },
+  "pnpm": {
+    "allowedBuildScripts": [
+      "@prisma/engines",
+      "prisma",
+      "tesseract.js"
+    ]
+  },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
