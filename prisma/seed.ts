@@ -30,27 +30,29 @@ async function main() {
   });
 
   // 3. Create Users
+  // NOTE: We use Gmail "+" aliases. They are unique in the database,
+  // but Gmail delivers ALL of them to your main virtualvoyager012@gmail.com inbox!
   console.log("👥 Creating staff...");
   const hash = (pw: string) => bcrypt.hash(pw, BCRYPT_ROUNDS);
 
   const users = {
     luthAdmin: await prisma.user.create({
-      data: { healthId: "LUTH-ADM-0001", name: "Admin User", email: "admin@luth.gov", passwordHash: await hash("LUTHadmin1!"), role: "ADMIN", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 4 }
+      data: { healthId: "LUTH-ADM-0001", name: "Admin User", email: "virtualvoyager012+admin@gmail.com", passwordHash: await hash("LUTHadmin1!"), role: "ADMIN", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 4 }
     }),
     luthDoc: await prisma.user.create({
-      data: { healthId: "LUTH-DOC-0001", name: "Dr. Adebayo", email: "doc@luth.gov", passwordHash: await hash("LUTHdoc123!"), role: "DOCTOR", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 8 }
+      data: { healthId: "LUTH-DOC-0001", name: "Dr. Adebayo", email: "virtualvoyager012+doc@gmail.com", passwordHash: await hash("LUTHdoc123!"), role: "DOCTOR", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 8 }
     }),
     luthNurse: await prisma.user.create({
-      data: { healthId: "LUTH-NUR-0001", name: "Nurse Chioma", email: "nurse@luth.gov", passwordHash: await hash("LUTHnurse1!"), role: "NURSE", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 6 }
+      data: { healthId: "LUTH-NUR-0001", name: "Nurse Chioma", email: "virtualvoyager012+nurse@gmail.com", passwordHash: await hash("LUTHnurse1!"), role: "NURSE", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 6 }
     }),
     luthPharm: await prisma.user.create({
-      data: { healthId: "LUTH-PHA-0001", name: "Pharm. Emeka", email: "pharm@luth.gov", passwordHash: await hash("LUTHpharm1!"), role: "PHARMACIST", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 8 }
+      data: { healthId: "LUTH-PHA-0001", name: "Pharm. Emeka", email: "virtualvoyager012+pharm@gmail.com", passwordHash: await hash("LUTHpharm1!"), role: "PHARMACIST", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 8 }
     }),
     luthLab: await prisma.user.create({
-      data: { healthId: "LUTH-LAB-0001", name: "Lab Tech Yusuf", email: "lab@luth.gov", passwordHash: await hash("LUTHlab123!"), role: "LAB", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 8 }
+      data: { healthId: "LUTH-LAB-0001", name: "Lab Tech Yusuf", email: "virtualvoyager012+lab@gmail.com", passwordHash: await hash("LUTHlab123!"), role: "LAB", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 8 }
     }),
     rshDoc: await prisma.user.create({
-      data: { healthId: "RSH-DOC-0001", name: "Dr. Obi", email: "doc@rsh.gov", passwordHash: await hash("RSHdoc1234!"), role: "DOCTOR", hospitalId: rsh.id, mustChangePassword: false, sessionTtlHrs: 8 }
+      data: { healthId: "RSH-DOC-0001", name: "Dr. Obi", email: "virtualvoyager012+rshdoc@gmail.com", passwordHash: await hash("RSHdoc1234!"), role: "DOCTOR", hospitalId: rsh.id, mustChangePassword: false, sessionTtlHrs: 8 }
     }),
   };
 
@@ -181,6 +183,7 @@ async function main() {
   console.log("   3. Ngozi Bello    -> EXPIRED passport for LUTH Doc.");
   console.log("   4. Emeka Nnaji    -> REVOKED passport for LUTH Doc.");
   console.log("   5. Fatima Yusuf   -> Active Break-Glass for LUTH Nurse (Flagged for Admin review).");
+  console.log("\n💡 All OTP emails will be sent to your main inbox: virtualvoyager012@gmail.com");
 }
 
 main()
