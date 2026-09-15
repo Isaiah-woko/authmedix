@@ -14,7 +14,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:reset": "prisma migrate reset",
     "db:seed": "prisma db seed",
-    "postinstall": "prisma skills sync || exit 0",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma migrate deploy && next build",
     "test:phase2": "tsx scripts/test-phase2.ts",
     "test:phase3": "tsx scripts/test-phase3.ts",
     "test:phase4": "tsx scripts/test-phase4.ts",
@@ -40,6 +41,7 @@
     "pg": "^8.23.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "resend": "^6.28.0",
     "tailwind-merge": "^3.6.0",
     "tesseract.js": "^5.1.1",
     "zod": "^4.5.4"
@@ -63,5 +65,5 @@
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
-  "packageManager": "pnpm@12.3.4"
+  "packageManager": "pnpm@12.4.1"
 }

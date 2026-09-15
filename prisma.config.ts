@@ -8,6 +8,7 @@ export default defineConfig({
     seed: "pnpm dlx tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env.DIRECT_URL ? env("DIRECT_URL") : env("DATABASE_URL"),
+    url: env("DATABASE_URL"),
+    // url: process.env.DIRECT_URL ? env("DIRECT_URL") : env("DATABASE_URL"),
   },
 });
