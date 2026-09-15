@@ -4,3 +4,4 @@ allowBuilds:
   "@prisma/engines": true
   "prisma": true
   "tesseract.js": true
+  "esbuild": true

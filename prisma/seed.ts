@@ -37,7 +37,7 @@ async function main() {
 
   const users = {
     luthAdmin: await prisma.user.create({
-      data: { healthId: "LUTH-ADM-0001", name: "Admin User", email: "virtualvoyager012+admin@gmail.com", passwordHash: await hash("LUTHadmin1!"), role: "ADMIN", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 4 }
+      data: { healthId: "LUTH-ADM-0001", name: "Admin User", email: "virtualvoyager012@gmail.com", passwordHash: await hash("LUTHadmin1!"), role: "ADMIN", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 4 }
     }),
     luthDoc: await prisma.user.create({
       data: { healthId: "LUTH-DOC-0001", name: "Dr. Adebayo", email: "virtualvoyager012+doc@gmail.com", passwordHash: await hash("LUTHdoc123!"), role: "DOCTOR", hospitalId: luth.id, mustChangePassword: false, sessionTtlHrs: 8 }
