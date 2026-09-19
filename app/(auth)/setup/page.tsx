@@ -304,7 +304,7 @@ export default function SetupPage() {
   return (
     <Card>
       <CardHeader>
-        <p className="text-section-lg font-semibold text-deep-indigo">MediTrust</p>
+        <p className="text-section-lg font-semibold text-deep-indigo">AuthMedix</p>
         <CardTitle className="mt-2">System setup</CardTitle>
         <CardDescription>
           First run only, creates the first hospital and its admin account. This

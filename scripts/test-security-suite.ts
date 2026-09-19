@@ -8,7 +8,7 @@ import { sha256 } from "../lib/hash";
 import type { Role, User } from "@prisma/client";
 
 const BASE = process.env.TEST_BASE_URL ?? "http://localhost:3000";
-const COOKIE = "meditrust.session-token";
+const COOKIE = "authmedix.session-token";
 
 let passed = 0, failed = 0;
 function check(name: string, cond: boolean) {
@@ -68,7 +68,7 @@ async function resetHospital(code: string) {
 }
 
 async function main() {
-  console.log("MediTrust Security Simulation Suite — ensure `pnpm dev` is running.\n");
+  console.log("AuthMedix Security Simulation Suite — ensure `pnpm dev` is running.\n");
 
   // ---------- Setup: clean slate ----------
   await prisma.auditLog.deleteMany({}); // fresh hash chain for this suite

@@ -4,7 +4,7 @@ import { prisma } from "../lib/prisma";
 import { issueSessionToken, BCRYPT_ROUNDS } from "../lib/auth";
 
 const BASE = process.env.TEST_BASE_URL ?? "http://localhost:3000";
-const COOKIE = "meditrust.session-token";
+const COOKIE = "authmedix.session-token";
 
 let passed = 0;
 let failed = 0;

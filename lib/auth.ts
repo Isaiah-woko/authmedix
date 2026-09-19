@@ -2,7 +2,7 @@ import NextAuth, { type NextAuthConfig } from "next-auth";
 import { encode } from "next-auth/jwt";
 import type { Role } from "@prisma/client";
 
-export const SESSION_COOKIE_NAME = "meditrust.session-token";
+export const SESSION_COOKIE_NAME = "authmedix.session-token";
 export const BCRYPT_ROUNDS = 12;
 
 export interface SessionUserPayload {

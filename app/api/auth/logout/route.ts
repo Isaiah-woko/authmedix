@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
 
 // Must exactly match the cookie name you set in lib/auth.ts
-const SESSION_COOKIE_NAME = "meditrust.session-token";
+const SESSION_COOKIE_NAME = "authmedix.session-token";
 
 export async function POST() {
   const session = await auth();

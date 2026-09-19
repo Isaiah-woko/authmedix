@@ -3,5 +3,5 @@
  * Swap in nodemailer behind EMAIL_SERVER_* env vars later if time permits.
  */
 export async function sendOtpEmail(to: string, code: string): Promise<void> {
-  console.log(`[MediTrust OTP] code for ${to}: ${code}`);
+  console.log(`[AuthMedix OTP] code for ${to}: ${code}`);
 }
