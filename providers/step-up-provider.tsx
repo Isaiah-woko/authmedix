@@ -19,7 +19,7 @@ import {
   useEffect,
   useMemo,
   useState,
-  type ReactNode,
+  type ReactNode
 } from "react";
 
 export interface StepUpPromptOptions {
@@ -80,27 +80,34 @@ export function StepUpProvider({ children }: { children: ReactNode }) {
       {children}
 
       {state ? (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-ink/40" onClick={() => close(null)} />
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-3 sm:p-4">
+          <div
+            className="absolute inset-0 bg-ink/40"
+            onClick={() => close(null)}
+          />
           <div
             role="dialog"
             aria-modal="true"
             aria-label={state.title}
-            className="relative w-full max-w-sm rounded-md border border-line bg-paper p-6"
+            className="relative mx-auto w-full max-h-[90dvh] max-w-sm overflow-y-auto rounded-md border border-line bg-paper p-4 sm:p-6"
           >
-            <h2 className="text-section font-semibold text-ink">{state.title}</h2>
+            <h2 className="text-section font-semibold text-ink">
+              {state.title}
+            </h2>
             <p className="mt-1 text-body text-slate-ink">
               {state.description ?? "This action requires extra verification."}
             </p>
             <p className="mt-3 text-data text-slate-ink">
-              A one-time code was sent to your email. In development it prints to the
-              server console. Codes are single-use.
+              A one-time code was sent to your email. In development it prints
+              to the server console. Codes are single-use.
             </p>
 
             <input
               autoFocus
               value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              onChange={(e) =>
+                setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
               onKeyDown={(e) => {
                 if (e.key === "Enter") submit();
               }}
@@ -110,7 +117,7 @@ export function StepUpProvider({ children }: { children: ReactNode }) {
               className="mono mt-4 w-full rounded-sm border border-line bg-white px-3 py-2 text-center text-lg tracking-[0.5em] text-ink outline-none focus:border-trust-teal"
             />
 
-            <div className="mt-4 flex justify-end gap-2">
+            <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={() => close(null)}

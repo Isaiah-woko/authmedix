@@ -12,7 +12,14 @@ export interface SheetProps {
 }
 
 /** Right-hand panel for detail work: record detail, approve/deny a request. */
-export function Sheet({ open, onClose, title, description, children, footer }: SheetProps) {
+export function Sheet({
+  open,
+  onClose,
+  title,
+  description,
+  children,
+  footer
+}: SheetProps) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -26,17 +33,23 @@ export function Sheet({ open, onClose, title, description, children, footer }: S
 
   return (
     <div className="fixed inset-0 z-[80]">
-      <div className="absolute inset-0 bg-ink/40" onClick={onClose} aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-ink/40"
+        onClick={onClose}
+        aria-hidden="true"
+      />
       <aside
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-line bg-paper"
+        className="absolute inset-y-0 right-0 flex w-full max-w-md max-h-[100dvh] flex-col border-l border-line bg-paper"
       >
-        <div className="flex items-start justify-between border-b border-line px-5 py-4">
+        <div className="flex items-start justify-between border-b border-line px-4 py-4 sm:px-5">
           <div>
             <h2 className="text-section font-semibold text-ink">{title}</h2>
-            {description ? <p className="mt-1 text-body text-slate-ink">{description}</p> : null}
+            {description ? (
+              <p className="mt-1 text-body text-slate-ink">{description}</p>
+            ) : null}
           </div>
           <button
             type="button"
@@ -47,9 +60,13 @@ export function Sheet({ open, onClose, title, description, children, footer }: S
             ✕
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+          {children}
+        </div>
         {footer ? (
-          <div className="flex justify-end gap-2 border-t border-line px-5 py-3">{footer}</div>
+          <div className="flex flex-col-reverse gap-2 border-t border-line px-4 py-3 sm:flex-row sm:justify-end sm:px-5">
+            {footer}
+          </div>
         ) : null}
       </aside>
     </div>
