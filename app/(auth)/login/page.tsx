@@ -123,7 +123,7 @@ export default function LoginPage() {
           <div className="relative mx-auto w-full max-w-md sm:max-w-xl">
             <div className="flex items-center gap-2.5">
               <BrandMark className="h-7 w-7" />
-              <p className="text-section-lg font-bold text-white">MediTrust</p>
+              <p className="text-section-lg font-bold text-white">AuthMedix</p>
             </div>
             <h2 className="mt-7 text-section-lg font-semibold leading-snug text-white sm:mt-9 sm:text-title">
               Nobody has default access to any patient. Ever.
@@ -256,11 +256,11 @@ export default function LoginPage() {
 
       </div>
 
-      {/* ── Left: what MediTrust is (desktop) ── */}
+      {/* ── Left: what AuthMedix is (desktop) ── */}
       <aside className="hidden flex-col justify-between bg-deep-indigo p-12 lg:flex lg:order-1 lg:border-r lg:border-white/10 xl:p-16">
         <div className="flex items-center gap-2.5">
           <BrandMark className="h-7 w-7" />
-          <p className="text-section-lg font-bold text-white">MediTrust</p>
+          <p className="text-section-lg font-bold text-white">AuthMedix</p>
         </div>
 
         <div className="max-w-lg">

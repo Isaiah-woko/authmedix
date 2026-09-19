@@ -48,7 +48,7 @@ function getSessionDeduped(): Promise<Session | null> {
 }
 
 /* ── Redirect circuit breaker: survives full page reloads via sessionStorage ── */
-const REDIRECT_LOG_KEY = "meditrust.redirect-log";
+const REDIRECT_LOG_KEY = "authmedix.redirect-log";
 
 function safeRedirect(target: string): boolean {
   if (typeof window === "undefined") return false;

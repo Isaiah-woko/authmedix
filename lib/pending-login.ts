@@ -7,7 +7,7 @@
  * The real session lives in the HttpOnly cookie — never here.
  */
 
-const KEY = "meditrust.pending-login";
+const KEY = "authmedix.pending-login";
 
 export interface PendingLogin {
   healthId: string;

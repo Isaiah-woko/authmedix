@@ -160,7 +160,7 @@ export default function OtpPage() {
   return (
     <Card>
       <CardHeader>
-        <p className="text-section-lg font-semibold text-deep-indigo">MediTrust</p>
+        <p className="text-section-lg font-semibold text-deep-indigo">AuthMedix</p>
         <CardTitle className="mt-2">Enter your one-time code</CardTitle>
         <CardDescription>
           We sent a 6-digit code to your registered email.

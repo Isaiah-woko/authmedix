@@ -1,4 +1,4 @@
-/** The MediTrust mark — shield + Trust Teal cross on Deep Indigo. */
+/** The AuthMedix mark — shield + Trust Teal cross on Deep Indigo. */
 export function BrandMark({ className = "h-6 w-6" }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={className} aria-hidden="true" fill="none">

@@ -62,7 +62,7 @@ export function Sidebar({
       <div className="border-b border-white/10 px-4 py-4">
         <div className="flex items-center gap-2">
           <BrandMark className="h-6 w-6" />
-          <p className="text-section-lg font-semibold text-white">MediTrust</p>
+          <p className="text-section-lg font-semibold text-white">AuthMedix</p>
         </div>
         <p className="mt-0.5 text-data text-white/60">
           {roleLabel(user.role)} · {hospitalCode(user.healthId)}

@@ -11,7 +11,7 @@ import { BCRYPT_ROUNDS } from "@/lib/auth";
 
 const MAX_ATTEMPTS = 5;
 // Pre-computed hash so unknown-user requests take the same time as real ones.
-const DUMMY_HASH = bcrypt.hashSync("MediTrust!DummyHash1", BCRYPT_ROUNDS);
+const DUMMY_HASH = bcrypt.hashSync("AuthMedix!DummyHash1", BCRYPT_ROUNDS);
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";

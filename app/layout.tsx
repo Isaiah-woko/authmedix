@@ -21,13 +21,13 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXTAUTH_URL ?? "http://localhost:3000"),
   title: {
-    default: "MediTrust: Zero-Trust Clinical Access",
-    template: "%s MediTrust",
+    default: "AuthMedix: Zero-Trust Clinical Access",
+    template: "%s AuthMedix",
   },
   description:
     "Nobody has default access to any patient. Every access is explicit, scoped to one patient, and time-bound.",
   openGraph: {
-    title: "MediTrust: Zero-Trust Clinical Access",
+    title: "AuthMedix: Zero-Trust Clinical Access",
     description:
       "Nobody has default access to any patient. Every access is explicit, scoped to one patient, and time-bound.",
     type: "website",

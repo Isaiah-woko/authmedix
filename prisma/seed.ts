@@ -7,7 +7,7 @@ import { sha256 } from "../lib/hash";
 const BCRYPT_ROUNDS = 12;
 
 async function main() {
-  console.log("🌱 Seeding MediTrust database...\n");
+  console.log("🌱 Seeding AuthMedix database...\n");
 
   // 1. Cleanup existing data (idempotent seeding)
   console.log("🧹 Cleaning up existing data...");

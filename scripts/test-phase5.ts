@@ -5,7 +5,7 @@ import { issueSessionToken, BCRYPT_ROUNDS } from "../lib/auth";
 import { issueLoginCode } from "../lib/otp";
 
 const BASE = process.env.TEST_BASE_URL ?? "http://localhost:3000";
-const COOKIE = "meditrust.session-token";
+const COOKIE = "authmedix.session-token";
 let passed = 0, failed = 0;
 function check(name: string, cond: boolean) {
   if (cond) { passed++; console.log(`  PASS  ${name}`); }

@@ -1,5 +1,5 @@
 /**
- * MediTrust API client — the ONLY place that talks to the backend.
+ * AuthMedix API client — the ONLY place that talks to the backend.
  *
  * Encodes the global rules from HANDOFF §2:
  *  - credentials: "include" on every call (HttpOnly cookie flows automatically)
