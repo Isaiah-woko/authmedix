@@ -4,7 +4,7 @@ import { requireRole, DURATION_MS } from "@/lib/access-control";
 import { prisma } from "@/lib/prisma";
 import { grantPassportSchema } from "@/lib/validators";
 import { writeAuditLog } from "@/lib/audit";
-import { rateLimit } from "@/lib/rate-limit";
+import { sensitiveActionLimiter, getClientIp } from "@/lib/rate-limit";
 import { verifyStepUpCode } from "@/lib/otp";
 import type { Prisma } from "@prisma/client";
 
@@ -47,9 +47,30 @@ export async function POST(req: NextRequest) {
 
   const { type, healthId, patientId, purpose, scope, duration } = parsed.data;
 
-    if (!rateLimit(`stepup-verify:${admin.id}`, 10, 15 * 60_000).allowed) {
-    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  // --- NEW UPSTASH RATE LIMITING ---
+  const ip = getClientIp(req.headers);
+  const identifier = `${ip}:${admin.id}`;
+
+  const { success, limit, reset, remaining } = await sensitiveActionLimiter.limit(identifier);
+  if (!success) {
+    return NextResponse.json(
+      {
+        error: "rate_limited",
+        message: "Too many sensitive actions. Please try again later.",
+        retryAfter: Math.ceil((reset - Date.now()) / 1000)
+      },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": limit.toString(),
+          "X-RateLimit-Remaining": remaining.toString(),
+          "X-RateLimit-Reset": reset.toString(),
+        },
+      }
+    );
   }
+  // --- END RATE LIMITING ---
+
   const stepUpOk = await verifyStepUpCode(admin.id, parsed.data.otpCode);
   if (!stepUpOk) {
     await writeAuditLog({ userId: admin.id, action: "PASSPORT_GRANT_STEP_UP_FAILED", outcome: "DENIED" });
@@ -68,8 +89,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "patient_not_found" }, { status: 404 });
   }
 
-   // an admin may only grant passports for their OWN hospital's patients.
-  // (Referral targets may be cross-hospital; the patient never is.)
+  // An admin may only grant passports for their OWN hospital's patients.
   if (patient.hospitalId !== admin.hospitalId) {
     return NextResponse.json({ error: "forbidden_cross_hospital" }, { status: 403 });
   }

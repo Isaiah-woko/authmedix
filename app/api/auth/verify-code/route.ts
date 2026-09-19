@@ -3,14 +3,14 @@ import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyCodeSchema } from "@/lib/validators";
 import { verifyLoginCode, hasUsableLoginCode } from "@/lib/otp";
-import { rateLimit } from "@/lib/rate-limit";
 import { writeAuditLog } from "@/lib/audit";
 import { issueSessionToken, SESSION_COOKIE_NAME } from "@/lib/auth";
+import { authLimiter, getClientIp } from "@/lib/rate-limit";
 
 const MAX_ATTEMPTS = 5;
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+  const ip = getClientIp(req.headers);
 
   const parsed = verifyCodeSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -18,9 +18,28 @@ export async function POST(req: NextRequest) {
   }
   const { healthId, code } = parsed.data;
 
-  if (!rateLimit(`verify:${healthId}:${ip}`, 10, 15 * 60_000).allowed) {
-    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  // UPSTASH RATE LIMITING
+  const identifier = `${ip}:${healthId}`;
+  const { success, limit, reset, remaining } = await authLimiter.limit(identifier);
+
+  if (!success) {
+    return NextResponse.json(
+      {
+        error: "rate_limited",
+        message: "Too many verification attempts. Please try again later.",
+        retryAfter: Math.ceil((reset - Date.now()) / 1000) // seconds until reset
+      },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": limit.toString(),
+          "X-RateLimit-Remaining": remaining.toString(),
+          "X-RateLimit-Reset": reset.toString(),
+        },
+      }
+    );
   }
+  // --- END RATE LIMITING ---
 
   const user = await prisma.user.findUnique({ where: { healthId } });
   if (!user) return NextResponse.json({ error: "invalid_code" }, { status: 401 });

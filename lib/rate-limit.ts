@@ -1,39 +1,35 @@
-/**
- * Sliding-window limiter. Defense-in-depth note: this is a soft throttle.
- * The PRIMARY brute-force defense is DB-backed account lockout (failedLoginAttempts),
- * which survives restarts and multiple instances. Swap this for Redis in production.
- */
-const buckets = new Map<string, number[]>();
+// lib/rate-limit.ts
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
-export interface RateLimitResult {
-  allowed: boolean;
-  remaining: number;
-  retryAfterMs: number;
+// Initialize the serverless Redis client
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+// 1. Login & OTP Verification: 5 attempts per 15 minutes per (IP + Health ID)
+// Prevents brute-forcing a specific account from a specific location.
+export const authLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, "15 m"),
+  analytics: true,
+  prefix: "authmedix:auth",
+});
+
+// 2. Sensitive Admin Actions & Step-Up: 5 attempts per 15 minutes
+// Covers step-up code generation, passport approval, direct grants, staff creation
+export const sensitiveActionLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, "15 m"),
+  prefix: "meditrust:sensitive",
+});
+
+
+
+// Helper to reliably extract the client IP in Next.js App Router / Vercel
+export function getClientIp(headers: Headers): string {
+  const forwarded = headers.get("x-forwarded-for");
+  const realIp = headers.get("x-real-ip");
+  return forwarded ? forwarded.split(",")[0].trim() : realIp || "unknown";
 }
-
-export function rateLimit(key: string, limit: number, windowMs: number): RateLimitResult {
-  const now = Date.now();
-  const windowStart = now - windowMs;
-
-  const timestamps = (buckets.get(key) ?? []).filter((t) => t > windowStart);
-
-  if (timestamps.length >= limit) {
-    const retryAfterMs = timestamps[0] + windowMs - now;
-    buckets.set(key, timestamps);
-    return { allowed: false, remaining: 0, retryAfterMs };
-  }
-
-  timestamps.push(now);
-  buckets.set(key, timestamps);
-  return { allowed: true, remaining: limit - timestamps.length, retryAfterMs: 0 };
-}
-
-// Lazy cleanup so the map doesn't grow unbounded.
-setInterval(() => {
-  const cutoff = Date.now() - 15 * 60 * 1000;
-  for (const [k, ts] of buckets) {
-    const fresh = ts.filter((t) => t > cutoff);
-    if (fresh.length === 0) buckets.delete(k);
-    else buckets.set(k, fresh);
-  }
-}, 60 * 1000).unref();

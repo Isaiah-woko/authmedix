@@ -4,7 +4,7 @@ import { requireRole, DURATION_MS } from "@/lib/access-control";
 import { prisma } from "@/lib/prisma";
 import { approveRequestSchema } from "@/lib/validators";
 import { writeAuditLog } from "@/lib/audit";
-import { rateLimit } from "@/lib/rate-limit";
+import { sensitiveActionLimiter, getClientIp } from "@/lib/rate-limit";
 import { verifyStepUpCode } from "@/lib/otp";
 
 export async function POST(
@@ -20,14 +20,40 @@ export async function POST(
     return NextResponse.json({ error: "invalid_request", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { duration, scope } = parsed.data;
+  const { duration, scope, otpCode } = parsed.data;
 
-    if (!rateLimit(`stepup-verify:${admin.id}`, 10, 15 * 60_000).allowed) {
-    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  // --- NEW UPSTASH RATE LIMITING ---
+  const ip = getClientIp(req.headers);
+  const identifier = `${ip}:${admin.id}`;
+
+  const { success, limit, reset, remaining } = await sensitiveActionLimiter.limit(identifier);
+  if (!success) {
+    return NextResponse.json(
+      {
+        error: "rate_limited",
+        message: "Too many sensitive actions. Please try again later.",
+        retryAfter: Math.ceil((reset - Date.now()) / 1000)
+      },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": limit.toString(),
+          "X-RateLimit-Remaining": remaining.toString(),
+          "X-RateLimit-Reset": reset.toString(),
+        },
+      }
+    );
   }
-  const stepUpOk = await verifyStepUpCode(admin.id, parsed.data.otpCode);
+  // --- END RATE LIMITING ---
+
+  const stepUpOk = await verifyStepUpCode(admin.id, otpCode);
   if (!stepUpOk) {
-    await writeAuditLog({ userId: admin.id, action: "APPROVE_STEP_UP_FAILED", outcome: "DENIED" });
+    await writeAuditLog({
+      userId: admin.id,
+      action: "APPROVE_STEP_UP_FAILED",
+      outcome: "DENIED",
+      reason: "INVALID_OTP"
+    });
     return NextResponse.json({ error: "step_up_verification_failed" }, { status: 403 });
   }
 

@@ -7,7 +7,7 @@ import { createStaffSchema } from "@/lib/validators";
 import { generateHealthId, generateTempPassword } from "@/lib/id-generators";
 import { writeAuditLog } from "@/lib/audit";
 import { BCRYPT_ROUNDS } from "@/lib/auth";
-import { rateLimit } from "@/lib/rate-limit";
+import { sensitiveActionLimiter, getClientIp } from "@/lib/rate-limit";
 import { verifyStepUpCode } from "@/lib/otp";
 
 export async function GET() {
@@ -48,9 +48,31 @@ export async function POST(req: NextRequest) {
   }
 
   const { name, email, role } = parsed.data;
-    if (!rateLimit(`stepup-verify:${admin.id}`, 10, 15 * 60_000).allowed) {
-    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+
+  // --- NEW UPSTASH RATE LIMITING ---
+  const ip = getClientIp(req.headers);
+  const identifier = `${ip}:${admin.id}`;
+
+  const { success, limit, reset, remaining } = await sensitiveActionLimiter.limit(identifier);
+  if (!success) {
+    return NextResponse.json(
+      {
+        error: "rate_limited",
+        message: "Too many sensitive actions. Please try again later.",
+        retryAfter: Math.ceil((reset - Date.now()) / 1000)
+      },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": limit.toString(),
+          "X-RateLimit-Remaining": remaining.toString(),
+          "X-RateLimit-Reset": reset.toString(),
+        },
+      }
+    );
   }
+  // --- END RATE LIMITING ---
+
   const stepUpOk = await verifyStepUpCode(admin.id, parsed.data.otpCode);
   if (!stepUpOk) {
     await writeAuditLog({ userId: admin.id, action: "STAFF_CREATE_STEP_UP_FAILED", outcome: "DENIED" });
