@@ -28,7 +28,7 @@ export function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
 
   if (isLoading || !user || !session) {
     return (
-      <header className="flex h-14 items-center justify-between border-b border-line bg-white px-4 sm:px-6">
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-line bg-white px-4 sm:px-6">
         <Skeleton className="h-8 w-40 sm:w-48" />
         <Skeleton className="h-8 w-24 sm:w-64" />
       </header>
@@ -52,7 +52,7 @@ export function TopBar({ onMenuClick }: { onMenuClick?: () => void }) {
       : "text-trust-teal";
 
   return (
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-4 py-2 sm:px-6">
+    <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-4 py-2 sm:px-6">
       <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         {onMenuClick ? (
           <IconButton

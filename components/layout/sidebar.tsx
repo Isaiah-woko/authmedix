@@ -20,7 +20,7 @@ import {
   Search,
   Users,
   ShieldAlert,
-  type LucideIcon,
+  type LucideIcon
 } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { navSectionsFor, roleLabel } from "@/lib/role";
@@ -37,12 +37,12 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/admin/patients": HeartPulse,
   "/admin/flagged": Flag,
   "/admin/audit": ScrollText,
-  "/admin/security": ShieldAlert,
+  "/admin/security": ShieldAlert
 };
 
 export function Sidebar({
   onNavigate,
-  className,
+  className
 }: {
   /** Called after a link click — AppShell uses it to close the mobile drawer. */
   onNavigate?: () => void;
@@ -55,9 +55,9 @@ export function Sidebar({
   const sections = navSectionsFor(user.role);
 
   return (
-        <aside
+    <aside
       className={cn(
-        "flex w-56 shrink-0 flex-col h-screen overflow-y-auto border-r border-deep-indigo-dark bg-deep-indigo",
+        "sticky top-0 flex h-screen w-56 shrink-0 flex-col overflow-y-auto border-r border-deep-indigo-dark bg-deep-indigo",
         className
       )}
     >

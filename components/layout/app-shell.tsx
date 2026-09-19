@@ -16,13 +16,17 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-paper overflow-hidden">
+    <div className="flex h-screen min-h-screen overflow-hidden bg-paper">
       {/* Desktop sidebar */}
-      <Sidebar className="hidden md:flex" />
+      <Sidebar className="hidden md:flex md:shrink-0" />
 
       {/* Mobile drawer */}
       {mobileNavOpen ? (
-        <div className="fixed inset-0 z-[85] md:hidden" role="dialog" aria-modal="true">
+        <div
+          className="fixed inset-0 z-[85] md:hidden"
+          role="dialog"
+          aria-modal="true"
+        >
           <div
             className="absolute inset-0 bg-ink/40"
             onClick={() => setMobileNavOpen(false)}
@@ -37,9 +41,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       ) : null}
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 min-h-0 flex-col">
         <TopBar onMenuClick={() => setMobileNavOpen(true)} />
-        <main className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
+        <main className="flex-1 min-h-0 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
           {children}
         </main>
       </div>
