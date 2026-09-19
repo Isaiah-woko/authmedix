@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 export interface SheetProps {
   open: boolean;
@@ -22,16 +23,23 @@ export function Sheet({
 }: SheetProps) {
   useEffect(() => {
     if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [open, onClose]);
 
   if (!open) return null;
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-[80] overflow-x-hidden">
       <div
         className="absolute inset-0 bg-ink/40"
@@ -74,6 +82,7 @@ export function Sheet({
           </div>
         ) : null}
       </aside>
-    </div>
+    </div>,
+    document.body
   );
 }

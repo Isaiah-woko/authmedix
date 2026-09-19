@@ -21,6 +21,7 @@ import {
   useState,
   type ReactNode
 } from "react";
+import { createPortal } from "react-dom";
 
 export interface StepUpPromptOptions {
   /** Short imperative title, e.g. "Approve access request". */
@@ -66,11 +67,16 @@ export function StepUpProvider({ children }: { children: ReactNode }) {
   // Escape closes while open.
   useEffect(() => {
     if (!state) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close(null);
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [state, close]);
 
   const value = useMemo(() => ({ prompt }), [prompt]);
@@ -79,69 +85,73 @@ export function StepUpProvider({ children }: { children: ReactNode }) {
     <StepUpContext.Provider value={value}>
       {children}
 
-      {state ? (
-        <div className="fixed inset-0 z-[90] flex min-w-0 items-center justify-center overflow-x-hidden p-2 sm:p-4">
-          <div
-            className="absolute inset-0 bg-ink/40"
-            onClick={() => close(null)}
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={state.title}
-            style={{
-              width: "calc(100vw - 1rem)",
-              maxWidth: "24rem",
-              boxSizing: "border-box"
-            }}
-            className="relative mx-auto min-w-0 max-h-[calc(100dvh-1rem)] max-w-full overflow-x-hidden overflow-y-auto overscroll-contain rounded-md border border-line bg-paper p-4 sm:p-6"
-          >
-            <h2 className="text-section font-semibold text-ink">
-              {state.title}
-            </h2>
-            <p className="mt-1 text-body text-slate-ink">
-              {state.description ?? "This action requires extra verification."}
-            </p>
-            <p className="mt-3 text-data text-slate-ink">
-              A one-time code was sent to your email. In development it prints
-              to the server console. Codes are single-use.
-            </p>
-
-            <input
-              autoFocus
-              value={code}
-              onChange={(e) =>
-                setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
-              }
-              onKeyDown={(e) => {
-                if (e.key === "Enter") submit();
-              }}
-              inputMode="numeric"
-              placeholder="••••••"
-              aria-label="One-time verification code"
-              className="mono mt-4 w-full rounded-sm border border-line bg-white px-3 py-2 text-center text-lg tracking-[0.5em] text-ink outline-none focus:border-trust-teal"
-            />
-
-            <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <button
-                type="button"
+      {state && typeof document !== "undefined"
+        ? createPortal(
+            <div className="fixed inset-0 z-[90] flex min-w-0 items-center justify-center overflow-x-hidden p-2 sm:p-4">
+              <div
+                className="absolute inset-0 bg-ink/40"
                 onClick={() => close(null)}
-                className="rounded-sm border border-line px-4 py-2 text-body text-slate-ink hover:bg-paper-dim"
+              />
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label={state.title}
+                style={{
+                  width: "calc(100vw - 1rem)",
+                  maxWidth: "24rem",
+                  boxSizing: "border-box"
+                }}
+                className="relative mx-auto min-w-0 max-h-[calc(100dvh-1rem)] max-w-full overflow-x-hidden overflow-y-auto overscroll-contain rounded-md border border-line bg-paper p-4 sm:p-6"
               >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={submit}
-                disabled={!/^\d{6}$/.test(code)}
-                className="rounded-sm bg-deep-indigo px-4 py-2 text-body font-medium text-white hover:bg-deep-indigo-dark disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Verify
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+                <h2 className="text-section font-semibold text-ink">
+                  {state.title}
+                </h2>
+                <p className="mt-1 text-body text-slate-ink">
+                  {state.description ??
+                    "This action requires extra verification."}
+                </p>
+                <p className="mt-3 text-data text-slate-ink">
+                  A one-time code was sent to your email. In development it
+                  prints to the server console. Codes are single-use.
+                </p>
+
+                <input
+                  autoFocus
+                  value={code}
+                  onChange={(e) =>
+                    setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") submit();
+                  }}
+                  inputMode="numeric"
+                  placeholder="••••••"
+                  aria-label="One-time verification code"
+                  className="mono mt-4 w-full rounded-sm border border-line bg-white px-3 py-2 text-center text-lg tracking-[0.5em] text-ink outline-none focus:border-trust-teal"
+                />
+
+                <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => close(null)}
+                    className="rounded-sm border border-line px-4 py-2 text-body text-slate-ink hover:bg-paper-dim"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={submit}
+                    disabled={!/^\d{6}$/.test(code)}
+                    className="rounded-sm bg-deep-indigo px-4 py-2 text-body font-medium text-white hover:bg-deep-indigo-dark disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Verify
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </StepUpContext.Provider>
   );
 }
