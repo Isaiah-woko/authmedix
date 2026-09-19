@@ -80,7 +80,7 @@ export function StepUpProvider({ children }: { children: ReactNode }) {
       {children}
 
       {state ? (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-2 sm:p-4">
+        <div className="fixed inset-0 z-[90] flex min-w-0 items-center justify-center overflow-x-hidden p-2 sm:p-4">
           <div
             className="absolute inset-0 bg-ink/40"
             onClick={() => close(null)}
@@ -89,7 +89,12 @@ export function StepUpProvider({ children }: { children: ReactNode }) {
             role="dialog"
             aria-modal="true"
             aria-label={state.title}
-            className="relative mx-auto w-[min(100%,24rem)] max-h-[calc(100dvh-1rem)] overflow-y-auto overscroll-contain rounded-md border border-line bg-paper p-4 sm:p-6"
+            style={{
+              width: "calc(100vw - 1rem)",
+              maxWidth: "24rem",
+              boxSizing: "border-box"
+            }}
+            className="relative mx-auto min-w-0 max-h-[calc(100dvh-1rem)] max-w-full overflow-x-hidden overflow-y-auto overscroll-contain rounded-md border border-line bg-paper p-4 sm:p-6"
           >
             <h2 className="text-section font-semibold text-ink">
               {state.title}

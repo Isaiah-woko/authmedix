@@ -32,7 +32,7 @@ export function Sheet({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[80]">
+    <div className="fixed inset-0 z-[80] overflow-x-hidden">
       <div
         className="absolute inset-0 bg-ink/40"
         onClick={onClose}
@@ -42,9 +42,14 @@ export function Sheet({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="absolute inset-y-0 right-0 flex w-[min(100%,28rem)] max-h-[100dvh] flex-col border-l border-line bg-paper"
+        style={{
+          width: "min(100vw, 28rem)",
+          maxWidth: "100vw",
+          boxSizing: "border-box"
+        }}
+        className="absolute inset-y-0 right-0 flex max-h-[100dvh] min-w-0 max-w-full flex-col border-l border-line bg-paper"
       >
-        <div className="flex items-start justify-between border-b border-line px-4 py-4 sm:px-5">
+        <div className="flex min-w-0 items-start justify-between border-b border-line px-4 py-4 sm:px-5">
           <div>
             <h2 className="text-section font-semibold text-ink">{title}</h2>
             {description ? (
@@ -60,11 +65,11 @@ export function Sheet({
             ✕
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
+        <div className="min-w-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
           {children}
         </div>
         {footer ? (
-          <div className="flex flex-col-reverse gap-2 border-t border-line px-4 py-3 sm:flex-row sm:justify-end sm:px-5">
+          <div className="flex min-w-0 flex-col-reverse gap-2 border-t border-line px-4 py-3 sm:flex-row sm:justify-end sm:px-5">
             {footer}
           </div>
         ) : null}

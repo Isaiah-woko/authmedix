@@ -39,7 +39,7 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-4">
+    <div className="fixed inset-0 z-[80] flex min-w-0 items-center justify-center overflow-x-hidden p-2 sm:p-4">
       <div
         className="absolute inset-0 bg-ink/40"
         onClick={onClose}
@@ -51,20 +51,28 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={title}
+        style={{
+          width: "calc(100vw - 1rem)",
+          maxWidth: "28rem",
+          maxHeight: "calc(100dvh - 1rem)",
+          boxSizing: "border-box"
+        }}
         className={cn(
-          "relative mx-auto w-[min(100%,28rem)] max-h-[calc(100dvh-1rem)] overflow-y-auto overscroll-contain rounded-sm border border-line bg-paper shadow-xl shadow-ink/10 focus:outline-none",
+          "relative mx-auto min-w-0 max-h-[calc(100dvh-1rem)] max-w-full overflow-x-hidden overflow-y-auto overscroll-contain rounded-sm border border-line bg-paper shadow-xl shadow-ink/10 focus:outline-none",
           widthClass
         )}
       >
-        <div className="border-b border-line px-4 py-4 sm:px-5">
+        <div className="min-w-0 border-b border-line px-4 py-4 sm:px-5">
           <h2 className="text-section font-semibold text-ink">{title}</h2>
           {description ? (
             <p className="mt-1 text-body text-slate-ink">{description}</p>
           ) : null}
         </div>
-        {children ? <div className="px-4 py-4 sm:px-5">{children}</div> : null}
+        {children ? (
+          <div className="min-w-0 px-4 py-4 sm:px-5">{children}</div>
+        ) : null}
         {footer ? (
-          <div className="flex flex-col-reverse gap-2 border-t border-line px-4 py-3 sm:flex-row sm:justify-end sm:px-5">
+          <div className="flex min-w-0 flex-col-reverse gap-2 border-t border-line px-4 py-3 sm:flex-row sm:justify-end sm:px-5">
             {footer}
           </div>
         ) : null}
