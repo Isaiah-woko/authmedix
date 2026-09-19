@@ -47,7 +47,7 @@ export function Modal({
   if (typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[80] flex min-w-0 items-center justify-center overflow-x-hidden p-2 sm:p-4">
+    <div className="fixed inset-0 z-80 flex min-w-0 items-center justify-center overflow-x-hidden p-2 sm:p-4">
       <div
         className="absolute inset-0 bg-ink/40"
         onClick={onClose}

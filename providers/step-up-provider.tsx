@@ -87,7 +87,7 @@ export function StepUpProvider({ children }: { children: ReactNode }) {
 
       {state && typeof document !== "undefined"
         ? createPortal(
-            <div className="fixed inset-0 z-[90] flex min-w-0 items-center justify-center overflow-x-hidden p-2 sm:p-4">
+            <div className="fixed inset-0 z-90 flex min-w-0 items-center justify-center overflow-x-hidden p-2 sm:p-4">
               <div
                 className="absolute inset-0 bg-ink/40"
                 onClick={() => close(null)}

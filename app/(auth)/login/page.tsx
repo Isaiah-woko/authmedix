@@ -118,7 +118,7 @@ export default function LoginPage() {
           />
           <div
             aria-hidden
-            className="pointer-events-none absolute -bottom-28 -left-16 h-64 w-64 rounded-full bg-white/[0.05] blur-2xl"
+            className="pointer-events-none absolute -bottom-28 -left-16 h-64 w-64 rounded-full bg-white/5 blur-2xl"
           />
           <div className="relative mx-auto w-full max-w-md sm:max-w-xl">
             <div className="flex items-center gap-2.5">

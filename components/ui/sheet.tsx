@@ -40,7 +40,7 @@ export function Sheet({
   if (typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[80] overflow-x-hidden">
+    <div className="fixed inset-0 z-80 overflow-x-hidden">
       <div
         className="absolute inset-0 bg-ink/40"
         onClick={onClose}
@@ -55,7 +55,7 @@ export function Sheet({
           maxWidth: "100vw",
           boxSizing: "border-box"
         }}
-        className="absolute inset-y-0 right-0 flex max-h-[100dvh] min-w-0 max-w-full flex-col border-l border-line bg-paper"
+        className="absolute inset-y-0 right-0 flex max-h-100dvh min-w-0 max-w-full flex-col border-l border-line bg-paper"
       >
         <div className="flex min-w-0 items-start justify-between border-b border-line px-4 py-4 sm:px-5">
           <div>
