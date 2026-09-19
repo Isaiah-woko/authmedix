@@ -19,6 +19,7 @@ import {
   ScrollText,
   Search,
   Users,
+  ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
@@ -36,6 +37,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/admin/patients": HeartPulse,
   "/admin/flagged": Flag,
   "/admin/audit": ScrollText,
+  "/admin/security": ShieldAlert,
 };
 
 export function Sidebar({

@@ -34,6 +34,7 @@ const ADMIN_NAV: NavSection[] = [
   { label: "Patients", href: "/admin/patients" },
   { label: "Flagged review", href: "/admin/flagged" },
   { label: "Audit log", href: "/admin/audit" },
+  { label: "Security overview", href: "/admin/security" },
 ];
 
 export const NAV_SECTIONS: Record<Role, NavSection[]> = {

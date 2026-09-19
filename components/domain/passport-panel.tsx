@@ -20,7 +20,7 @@ export function PassportPanel({
   passport,
   onRenew,
   renewLoading = false,
-  className,
+  className
 }: {
   passport: MyPassport;
   onRenew?: (passportId: string) => void;
@@ -62,9 +62,12 @@ export function PassportPanel({
           </div>
 
           {/* Right: actions */}
-          <div className="flex shrink-0 items-center gap-2">
-            <Link href={`/patients/${passport.patient.id}`}>
-              <Button variant="outline" size="sm">
+          <div className="flex w-full shrink-0 flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
+            <Link
+              href={`/patients/${passport.patient.id}`}
+              className="w-full sm:w-auto"
+            >
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
                 View records
               </Button>
             </Link>
@@ -72,6 +75,7 @@ export function PassportPanel({
               <Button
                 variant="trust"
                 size="sm"
+                className="w-full sm:w-auto"
                 loading={renewLoading}
                 onClick={() => onRenew(passport.id)}
               >

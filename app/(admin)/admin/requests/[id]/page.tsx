@@ -14,16 +14,26 @@ import Link from "next/link";
 import { useStepUp } from "@/hooks/use-step-up";
 import { useToast } from "@/hooks/use-toast";
 import { api, describeApiError } from "@/lib/api";
-import { DURATION_PRESETS, RECORD_TYPE_LABELS, RECORD_TYPE_ORDER } from "@/lib/constants";
+import {
+  DURATION_PRESETS,
+  RECORD_TYPE_LABELS,
+  RECORD_TYPE_ORDER
+} from "@/lib/constants";
 import { formatTimestamp, zodFieldErrors } from "@/lib/utils";
 import {
   approveRequestSchema,
   denyRequestSchema,
-  type PassportRequest,
+  type PassportRequest
 } from "@/types";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FieldError, FieldHint, Label } from "@/components/ui/label";
@@ -89,7 +99,9 @@ export default function RequestDetailPage() {
 
     const parsed = approveFormSchema.safeParse({ duration, scope });
     if (!parsed.success) {
-      setApproveError(zodFieldErrors(parsed.error).scope ?? "Check the duration and scope.");
+      setApproveError(
+        zodFieldErrors(parsed.error).scope ?? "Check the duration and scope."
+      );
       return;
     }
 
@@ -97,7 +109,7 @@ export default function RequestDetailPage() {
       actionLabel: "Approve access request",
       description: `${request.requester.name} → ${request.patient.name}`,
       run: (otpCode) =>
-        api.passportRequests.approve(request.id, { duration, scope, otpCode }),
+        api.passportRequests.approve(request.id, { duration, scope, otpCode })
     });
 
     if (outcome.cancelled || !outcome.result) return;
@@ -106,7 +118,7 @@ export default function RequestDetailPage() {
       toast({
         title: "Request approved",
         description: `Standard passport created. ${duration === "8H" ? "8 hours" : "24 hours"}.`,
-        tone: "success",
+        tone: "success"
       });
       router.push("/admin/requests");
       return;
@@ -121,7 +133,8 @@ export default function RequestDetailPage() {
     const parsed = denyRequestSchema.safeParse({ denialReason });
     if (!parsed.success) {
       setDenyError(
-        zodFieldErrors(parsed.error).denialReason ?? "A denial reason is required."
+        zodFieldErrors(parsed.error).denialReason ??
+          "A denial reason is required."
       );
       return;
     }
@@ -131,7 +144,11 @@ export default function RequestDetailPage() {
     setDenying(false);
 
     if (result.ok) {
-      toast({ title: "Request denied", description: "The reason is recorded for the requester.", tone: "default" });
+      toast({
+        title: "Request denied",
+        description: "The reason is recorded for the requester.",
+        tone: "default"
+      });
       router.push("/admin/requests");
       return;
     }
@@ -158,7 +175,9 @@ export default function RequestDetailPage() {
         body="This request is no longer pending. It was approved or denied, possibly by another admin. Reviews cannot be replayed."
         action={
           <Link href="/admin/requests">
-            <Button variant="outline" size="sm">Back to queue</Button>
+            <Button variant="outline" size="sm">
+              Back to queue
+            </Button>
           </Link>
         }
       />
@@ -171,7 +190,7 @@ export default function RequestDetailPage() {
         items={[
           { label: "Dashboard", href: "/" },
           { label: "Requests queue", href: "/admin/requests" },
-          { label: request.requester.name },
+          { label: request.requester.name }
         ]}
       />
 
@@ -180,21 +199,28 @@ export default function RequestDetailPage() {
         <CardHeader>
           <CardTitle>Access request</CardTitle>
           <CardDescription>
-            Submitted <span className="mono">{formatTimestamp(request.createdAt)}</span>
+            Submitted{" "}
+            <span className="mono">{formatTimestamp(request.createdAt)}</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <p className="text-data font-medium text-slate-ink">Requester</p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <span className="text-body font-medium text-ink">{request.requester.name}</span>
+              <span className="text-body font-medium text-ink">
+                {request.requester.name}
+              </span>
               <RoleBadge role={request.requester.role} />
             </div>
-            <span className="mono text-data text-slate-ink">{request.requester.healthId}</span>
+            <span className="mono text-data text-slate-ink">
+              {request.requester.healthId}
+            </span>
           </div>
           <div>
             <p className="text-data font-medium text-slate-ink">Patient</p>
-            <p className="mt-1 text-body font-medium text-ink">{request.patient.name}</p>
+            <p className="mt-1 text-body font-medium text-ink">
+              {request.patient.name}
+            </p>
             <PatientCodeDisplay code={request.patient.patientCode} />
           </div>
           <div className="sm:col-span-2">
@@ -202,7 +228,9 @@ export default function RequestDetailPage() {
             <p className="mt-1 text-body text-ink">{request.purpose}</p>
           </div>
           <div className="sm:col-span-2">
-            <p className="text-data font-medium text-slate-ink">Requested scope</p>
+            <p className="text-data font-medium text-slate-ink">
+              Requested scope
+            </p>
             <div className="mt-1">
               <ScopeBadges scope={request.scope} />
             </div>
@@ -216,7 +244,8 @@ export default function RequestDetailPage() {
           <CardHeader>
             <CardTitle className="text-body">Approve</CardTitle>
             <CardDescription>
-              Creates a STANDARD passport immediately. Consumes a fresh step-up code.
+              Creates a STANDARD passport immediately. Consumes a fresh step-up
+              code.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -234,13 +263,16 @@ export default function RequestDetailPage() {
                   </option>
                 ))}
               </Select>
-              <FieldHint>8h is the default; 24h for an extended episode of care.</FieldHint>
+              <FieldHint>
+                8h is the default; 24h for an extended episode of care.
+              </FieldHint>
             </div>
 
             <fieldset>
               <legend className="text-body font-medium text-ink">Scope</legend>
               <p className="mt-0.5 text-data text-slate-ink">
-                Pre-filled from the request. Edit if the approval should be narrower.
+                Pre-filled from the request. Edit if the approval should be
+                narrower.
               </p>
               <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {RECORD_TYPE_ORDER.map((type) => (
@@ -252,11 +284,15 @@ export default function RequestDetailPage() {
                       checked={scope.includes(type)}
                       onChange={(e) =>
                         setScope((prev) =>
-                          e.target.checked ? [...prev, type] : prev.filter((t) => t !== type)
+                          e.target.checked
+                            ? [...prev, type]
+                            : prev.filter((t) => t !== type)
                         )
                       }
                     />
-                    <span className="text-body text-ink">{RECORD_TYPE_LABELS[type]}</span>
+                    <span className="text-body text-ink">
+                      {RECORD_TYPE_LABELS[type]}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -268,7 +304,11 @@ export default function RequestDetailPage() {
               </div>
             ) : null}
 
-            <Button variant="trust" className="w-full" onClick={() => void submitApprove()}>
+            <Button
+              variant="trust"
+              className="w-full"
+              onClick={() => void submitApprove()}
+            >
               Approve request
             </Button>
           </CardContent>
@@ -278,7 +318,8 @@ export default function RequestDetailPage() {
           <CardHeader>
             <CardTitle className="text-body">Deny</CardTitle>
             <CardDescription>
-              A reason is mandatory. It is recorded and visible to the requester.
+              A reason is mandatory. It is recorded and visible to the
+              requester.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -291,7 +332,9 @@ export default function RequestDetailPage() {
                 placeholder="e.g. Purpose doesn't match current care needs for this patient."
                 value={denialReason}
                 onChange={(e) => setDenialReason(e.target.value)}
-                invalid={denialReason.length > 0 && denialReason.trim().length < 1}
+                invalid={
+                  denialReason.length > 0 && denialReason.trim().length < 1
+                }
               />
               <FieldError>{denyError}</FieldError>
             </div>

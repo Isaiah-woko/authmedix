@@ -6,7 +6,7 @@ export function PageHeader({
   title,
   subtitle,
   actions,
-  className,
+  className
 }: {
   title: string;
   subtitle?: string;
@@ -14,12 +14,23 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("mb-6 flex items-start justify-between gap-4", className)}>
-      <div>
+    <div
+      className={cn(
+        "mb-6 flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-4",
+        className
+      )}
+    >
+      <div className="min-w-0">
         <h1 className="text-title font-semibold text-ink">{title}</h1>
-        {subtitle ? <p className="mt-1 text-body text-slate-ink">{subtitle}</p> : null}
+        {subtitle ? (
+          <p className="mt-1 text-body text-slate-ink">{subtitle}</p>
+        ) : null}
       </div>
-      {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+      {actions ? (
+        <div className="flex shrink-0 flex-col items-stretch gap-2 sm:flex-row md:items-center">
+          {actions}
+        </div>
+      ) : null}
     </div>
   );
 }

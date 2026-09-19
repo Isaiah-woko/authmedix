@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { requireAuth, requireRole } from "@/lib/access-control";
+import type { Prisma } from "@prisma/client";
+import { requireAuth } from "@/lib/access-control";
 import { prisma } from "@/lib/prisma";
 import { createPassportRequestSchema } from "@/lib/validators";
 import { writeAuditLog } from "@/lib/audit";
@@ -9,6 +10,11 @@ import { getVisibleFields } from "@/lib/role-fields";
 export async function POST(req: NextRequest) {
   const user = await requireAuth();
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
+  // Admins grant passports, they don't request them
+  if (user.role === "ADMIN") {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
 
   const parsed = createPassportRequestSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -68,13 +74,19 @@ export async function GET(req: NextRequest) {
   const user = await requireAuth();
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const statusFilter = req.nextUrl.searchParams.get("status") ?? undefined;
+  const statusFilter = req.nextUrl.searchParams.get("status");
 
-  let whereClause: any = {};
-  if (statusFilter) whereClause.status = statusFilter;
+  // Use strict Prisma typing instead of `any`
+  const whereClause: Prisma.PassportRequestWhereInput = {};
+
+  if (statusFilter) {
+    // CRITICAL FIX: Normalize to uppercase to match the Prisma RequestStatus enum
+    // (e.g., frontend sends "pending", Prisma needs "PENDING")
+    whereClause.status = statusFilter.toUpperCase() as "PENDING" | "APPROVED" | "DENIED";
+  }
 
   if (user.role === "ADMIN") {
-    // Admin sees pending requests for patients in their hospital
+    // Admin sees requests for patients in their hospital
     whereClause.patient = { hospitalId: user.hospitalId };
   } else {
     // Clinical workers only see their own requests

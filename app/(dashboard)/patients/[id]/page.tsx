@@ -78,11 +78,15 @@ export default function PatientRecordPage() {
       toast({
         title: "Passport renewed",
         description: "The expiry countdown has been extended.",
-        tone: "success",
+        tone: "success"
       });
       await refetch();
     } else {
-      toast({ title: "Renewal failed", description: describeApiError(result), tone: "danger" });
+      toast({
+        title: "Renewal failed",
+        description: describeApiError(result),
+        tone: "danger"
+      });
     }
   }, [state, refetch, toast]);
 
@@ -96,10 +100,14 @@ export default function PatientRecordPage() {
           items={[
             { label: "Dashboard", href: "/" },
             { label: "Search", href: "/search" },
-            { label: "Patient" },
+            { label: "Patient" }
           ]}
         />
-        <AccessStateBanner reason={state.reason} identity={identity} patientId={patientId ?? ""} />
+        <AccessStateBanner
+          reason={state.reason}
+          identity={identity}
+          patientId={patientId ?? ""}
+        />
       </>
     );
   }
@@ -112,7 +120,9 @@ export default function PatientRecordPage() {
         body="This patient record doesn't exist or is not available to your hospital."
         action={
           <Link href="/search">
-            <Button variant="outline" size="sm">Back to search</Button>
+            <Button variant="outline" size="sm">
+              Back to search
+            </Button>
           </Link>
         }
       />
@@ -145,22 +155,31 @@ export default function PatientRecordPage() {
         items={[
           { label: "Dashboard", href: "/" },
           { label: "Search", href: "/search" },
-          { label: patient.name },
+          { label: patient.name }
         ]}
       />
 
       {/* Header: identity + primary action */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <h1 className="text-title font-semibold text-ink">{patient.name}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="mono text-data text-slate-ink">{patient.patientCode}</span>
-            <span className="text-data text-slate-ink">DOB {formatDate(patient.dob)}</span>
+            <span className="mono text-data text-slate-ink">
+              {patient.patientCode}
+            </span>
+            <span className="text-data text-slate-ink">
+              DOB {formatDate(patient.dob)}
+            </span>
           </div>
         </div>
         {canAuthor ? (
-          <Link href={`/add-documentation/${patient.id}`} className="shrink-0">
-            <Button variant="primary" size="sm">Add documentation</Button>
+          <Link
+            href={`/add-documentation/${patient.id}`}
+            className="w-full shrink-0 sm:w-auto"
+          >
+            <Button variant="primary" size="sm" className="w-full sm:w-auto">
+              Add documentation
+            </Button>
           </Link>
         ) : null}
       </div>
@@ -169,10 +188,14 @@ export default function PatientRecordPage() {
           check key presence, never length (HANDOFF §3.4). Coral = clinical alert. */}
       {hasAllergies ? (
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span className="text-data font-medium text-slate-ink">Allergies</span>
+          <span className="text-data font-medium text-slate-ink">
+            Allergies
+          </span>
           {patient.allergies && patient.allergies.length > 0 ? (
             patient.allergies.map((allergy) => (
-              <Badge key={allergy} tone="coral">{allergy}</Badge>
+              <Badge key={allergy} tone="coral">
+                {allergy}
+              </Badge>
             ))
           ) : (
             <span className="text-data text-slate-ink">None recorded</span>

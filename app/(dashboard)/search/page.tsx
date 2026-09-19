@@ -50,7 +50,7 @@ export default function SearchPage() {
         toast({
           title: "Search failed",
           description: describeApiError(result),
-          tone: "danger",
+          tone: "danger"
         });
         setResults([]);
       }
@@ -85,10 +85,7 @@ export default function SearchPage() {
           onChange={(e) => setQuery(e.target.value)}
           className="pl-9"
           autoFocus
-
-
         />
-
       </div>
 
       {/* ── Results ── */}
@@ -133,7 +130,12 @@ function SearchResultRow({ patient }: { patient: PatientSearchResult }) {
             patientCode={patient.patientCode}
             hospitalId={patient.hospitalId}
           />
-          <Button variant="outline" size="sm" tabIndex={-1} className="self-start sm:self-center">
+          <Button
+            variant="outline"
+            size="sm"
+            tabIndex={-1}
+            className="self-start sm:self-center"
+          >
             Open
           </Button>
         </CardContent>
