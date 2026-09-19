@@ -188,12 +188,16 @@ function SecurityOverview() {
   }, [refresh]);
 
   // Gentle 60s poll — paused while the tab is hidden
+   // Gentle 60s poll — paused while the tab is hidden
   useEffect(() => {
     const id = window.setInterval(() => {
-      if (document.visibilityState === "visible") void load(true);
+      if (document.visibilityState === "visible") {
+        // eslint-disable-next-line
+        void refresh();
+      }
     }, REFRESH_MS);
     return () => window.clearInterval(id);
-  }, [load]);
+  }, [refresh]);
 
   const insights = useMemo(
     () => buildInsights({ audit, flagged, staff, pendingCount, now }),
@@ -254,7 +258,7 @@ function SecurityOverview() {
           title="Couldn't load the security overview"
           body="The audit feed didn't respond. This screen only reads existing admin endpoints. Check your session and try again."
           action={
-            <Button variant="outline" size="sm" onClick={() => void load(false)}>
+            <Button variant="outline" size="sm" onClick={() => void load}>
               Try again
             </Button>
           }
