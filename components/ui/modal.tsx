@@ -39,7 +39,7 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-4">
       <div
         className="absolute inset-0 bg-ink/40"
         onClick={onClose}
@@ -52,7 +52,7 @@ export function Modal({
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "relative mx-auto w-full max-h-[90dvh] overflow-y-auto rounded-sm border border-line bg-paper shadow-xl shadow-ink/10 focus:outline-none",
+          "relative mx-auto w-[min(100%,28rem)] max-h-[calc(100dvh-1rem)] overflow-y-auto overscroll-contain rounded-sm border border-line bg-paper shadow-xl shadow-ink/10 focus:outline-none",
           widthClass
         )}
       >
