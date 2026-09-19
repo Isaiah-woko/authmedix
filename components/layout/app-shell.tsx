@@ -16,7 +16,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <div className="flex h-screen min-h-screen overflow-hidden bg-paper">
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-paper">
       {/* Desktop sidebar */}
       <Sidebar className="hidden md:flex md:shrink-0" />
 
@@ -43,7 +43,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 flex-1 min-h-0 flex-col">
         <TopBar onMenuClick={() => setMobileNavOpen(true)} />
-        <main className="flex-1 min-h-0 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
+        <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6 sm:py-6">
           {children}
         </main>
       </div>
