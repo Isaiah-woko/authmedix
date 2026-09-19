@@ -4,7 +4,7 @@
 
 In most hospital systems, being a doctor at a hospital means you can open any chart in that hospital. AuthMedix inverts that default: **nobody has standing access to any patient, ever.** Not a doctor at the same hospital, not an administrator, not even the patient's own care team until explicitly assigned. Every view of a record is an explicit, scoped, time-bound grant, and every access attempt, allowed _or denied_, is written to a tamper-evident audit ledger before the server responds.
 
----
+
 
 ## The problem
 
@@ -132,6 +132,5 @@ The seed script loads two hospitals, six staff, five patients, and every access 
 
 One Vercel project. The build runs migrations before compiling (`prisma migrate deploy && next build`); the Prisma client uses a capped connection pool sized for serverless. Reset-and-reseed is a single command, so the demo is always stage-fresh.
 
----
 
 _Authorized vs. not, at a glance, on every screen, every time. That's the whole product._
