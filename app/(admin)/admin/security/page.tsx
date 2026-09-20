@@ -26,7 +26,7 @@ import {
   type AuditRow,
   type FlaggedEvent,
   type Insight,
-  type StaffRow,
+  type StaffRow
 } from "@/lib/security-insights";
 import { cn } from "@/lib/utils";
 import { RoleGate } from "@/components/layout/role-gate";
@@ -39,7 +39,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 const REFRESH_MS = 60_000;
 
 /** Tolerant list fetcher — endpoints may return a bare array or a wrapper. */
-async function fetchList(url: string): Promise<{ ok: boolean; rows: unknown[] }> {
+async function fetchList(
+  url: string
+): Promise<{ ok: boolean; rows: unknown[] }> {
   try {
     const res = await fetch(url, { credentials: "include", cache: "no-store" });
     if (!res.ok) return { ok: false, rows: [] };
@@ -50,7 +52,9 @@ async function fetchList(url: string): Promise<{ ok: boolean; rows: unknown[] }>
         ? data.items
         : Array.isArray(data?.rows)
           ? data.rows
-          : [];
+          : Array.isArray(data?.logs)
+            ? data.logs
+            : [];
     return { ok: true, rows };
   } catch {
     return { ok: false, rows: [] };
@@ -60,7 +64,7 @@ async function fetchList(url: string): Promise<{ ok: boolean; rows: unknown[] }>
 function StatTile({
   label,
   value,
-  tone,
+  tone
 }: {
   label: string;
   value: number;
@@ -107,7 +111,9 @@ function InsightRow({ insight }: { insight: Insight }) {
         </Badge>
         <h3 className="text-body font-semibold text-ink">{insight.title}</h3>
       </div>
-      <p className="mt-1.5 text-body leading-relaxed text-slate-ink">{insight.detail}</p>
+      <p className="mt-1.5 text-body leading-relaxed text-slate-ink">
+        {insight.detail}
+      </p>
       {insight.href ? (
         <Link href={insight.href} className="mt-2.5 inline-block">
           <Button variant="outline" size="sm">
@@ -130,24 +136,27 @@ function SecurityOverview() {
   const [refreshing, setRefreshing] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
-    /**
+  /**
    * Fetch + commit. Every setState happens AFTER the first await, so nothing
    * runs synchronously inside an effect (keeps the set-state-in-effect rule
    * and the React Compiler quiet).
    */
   const load = useCallback(async () => {
-    const [auditRes, flaggedRes, passportsRes, pendingRes, staffRes] = await Promise.all([
-      fetchList("/api/audit"),
-      fetchList("/api/admin/audit?flagged=true&reviewed=false"),
-      fetchList("/api/passports?active=true"),
-      fetchList("/api/passport-requests?status=pending"),
-      fetchList("/api/admin/staff"),
-    ]);
+    const [auditRes, flaggedRes, passportsRes, pendingRes, staffRes] =
+      await Promise.all([
+        fetchList("/api/audit"),
+        fetchList("/api/admin/audit?flagged=true&reviewed=false"),
+        fetchList("/api/passports?active=true"),
+        fetchList("/api/passport-requests?status=pending"),
+        fetchList("/api/admin/staff")
+      ]);
 
     if (auditRes.ok) {
       setFailed(false);
       setAudit(
-        (auditRes.rows as AuditRow[]).slice().sort((a, b) => ts(b.createdAt) - ts(a.createdAt))
+        (auditRes.rows as AuditRow[])
+          .slice()
+          .sort((a, b) => ts(b.createdAt) - ts(a.createdAt))
       );
       setFlagged(flaggedRes.rows as FlaggedEvent[]);
       setStaff(staffRes.rows as StaffRow[]);
@@ -188,11 +197,10 @@ function SecurityOverview() {
   }, [refresh]);
 
   // Gentle 60s poll — paused while the tab is hidden
-   // Gentle 60s poll — paused while the tab is hidden
+  // Gentle 60s poll — paused while the tab is hidden
   useEffect(() => {
     const id = window.setInterval(() => {
       if (document.visibilityState === "visible") {
-        // eslint-disable-next-line
         void refresh();
       }
     }, REFRESH_MS);
@@ -210,7 +218,7 @@ function SecurityOverview() {
         flaggedCount: flagged.length,
         pendingCount,
         activeCount,
-        now,
+        now
       }),
     [audit, flagged, pendingCount, activeCount, now]
   );
@@ -235,7 +243,9 @@ function SecurityOverview() {
               disabled={refreshing}
             >
               <span className="flex items-center gap-2">
-                <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} />
+                <RefreshCw
+                  className={cn("h-3.5 w-3.5", refreshing && "animate-spin")}
+                />
                 Refresh
               </span>
             </Button>
@@ -288,14 +298,20 @@ function SecurityOverview() {
               value={kpis.pendingRequests}
               tone={kpis.pendingRequests > 0 ? "amber" : "teal"}
             />
-            <StatTile label="Active passports" value={kpis.activePassports} tone="teal" />
+            <StatTile
+              label="Active passports"
+              value={kpis.activePassports}
+              tone="teal"
+            />
           </div>
 
           {/* Attention + activity */}
           <div className="grid gap-4 lg:grid-cols-5">
             <section className="rounded-sm border border-line bg-white lg:col-span-3">
               <header className="flex items-center justify-between border-b border-line px-4 py-3">
-                <h2 className="text-section font-semibold text-ink">Needs your attention</h2>
+                <h2 className="text-section font-semibold text-ink">
+                  Needs your attention
+                </h2>
                 <Badge tone="slate">Last 7 days</Badge>
               </header>
               <div className="divide-y divide-line">
@@ -306,13 +322,15 @@ function SecurityOverview() {
             </section>
 
             <section className="rounded-sm border border-line bg-white p-4 lg:col-span-2">
-              <h2 className="text-section font-semibold text-ink">Activity · last 24 hours</h2>
+              <h2 className="text-section font-semibold text-ink">
+                Activity · last 24 hours
+              </h2>
               <p className="mt-0.5 text-data text-slate-ink">
                 Allowed vs denied access events, hour by hour.
               </p>
 
               <div
-                className="mt-4 flex h-32 items-end gap-[3px] border-b border-line"
+                className="mt-4 flex h-32 items-end gap-0.75 border-b border-line"
                 role="img"
                 aria-label="Access events per hour over the last 24 hours"
               >
@@ -325,13 +343,17 @@ function SecurityOverview() {
                     {b.denied > 0 ? (
                       <div
                         className="w-full bg-alert-coral"
-                        style={{ height: `${Math.max(4, (b.denied / maxBucket) * 100)}%` }}
+                        style={{
+                          height: `${Math.max(4, (b.denied / maxBucket) * 100)}%`
+                        }}
                       />
                     ) : null}
                     {b.allowed > 0 ? (
                       <div
                         className="w-full bg-trust-teal"
-                        style={{ height: `${Math.max(4, (b.allowed / maxBucket) * 100)}%` }}
+                        style={{
+                          height: `${Math.max(4, (b.allowed / maxBucket) * 100)}%`
+                        }}
                       />
                     ) : null}
                   </div>
@@ -359,14 +381,18 @@ function SecurityOverview() {
           {/* Recent activity feed */}
           <section className="rounded-sm border border-line bg-white">
             <header className="flex items-center justify-between border-b border-line px-4 py-3">
-              <h2 className="text-section font-semibold text-ink">Recent activity</h2>
-              <span className="mono text-data text-slate-ink">Latest 30 events</span>
+              <h2 className="text-section font-semibold text-ink">
+                Recent activity
+              </h2>
+              <span className="mono text-data text-slate-ink">
+                Latest 30 events
+              </span>
             </header>
             {feed.length === 0 ? (
               <div className="p-6">
                 <p className="text-body text-slate-ink">
-                  No audit events yet. Every access attempt, allowed or denied will appear
-                  here as the system is used.
+                  No audit events yet. Every access attempt, allowed or denied
+                  will appear here as the system is used.
                 </p>
               </div>
             ) : (
@@ -379,14 +405,18 @@ function SecurityOverview() {
                     <span className="mono shrink-0 text-data text-slate-ink sm:w-28">
                       {fmtWhen(row.createdAt, now)}
                     </span>
-                    <span className="min-w-0 flex-1 text-body text-ink">{describeRow(row)}</span>
+                    <span className="min-w-0 flex-1 text-body text-ink">
+                      {describeRow(row)}
+                    </span>
                     <span className="flex shrink-0 items-center gap-2">
                       {row.flagged ? <Badge tone="coral">Flagged</Badge> : null}
                       <span className="flex items-center gap-1.5">
                         <span
                           className={cn(
                             "h-1.5 w-1.5 rounded-full",
-                            row.outcome === "DENIED" ? "bg-alert-coral" : "bg-trust-teal"
+                            row.outcome === "DENIED"
+                              ? "bg-alert-coral"
+                              : "bg-trust-teal"
                           )}
                           aria-hidden="true"
                         />
